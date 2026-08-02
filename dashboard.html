@@ -134,7 +134,7 @@
     <div class="stat-card">
       <div class="icon">%</div>
       <div class="num" id="statCapaian">-</div>
-      <div class="lbl">Capaian realisasi vs rencana</div>
+      <div class="lbl">Efisiensi belanja/kunjungan vs bulan lalu</div>
     </div>
   </section>
 
@@ -147,12 +147,12 @@
     </div>
 
     <div class="panel">
-      <h2>Capaian realisasi</h2>
-      <p class="sub">Realisasi belanja vs rencana belanja</p>
+      <h2>Efisiensi belanja per kunjungan</h2>
+      <p class="sub" id="targetLabel">Bulan ini vs bulan lalu &middot; target &le; -</p>
       <div class="gauge-wrap">
         <canvas id="chartGauge" width="180" height="180"></canvas>
         <div class="gauge-num" id="gaugeNum">-</div>
-        <div class="gauge-lbl">dari rencana bulan ini</div>
+        <div class="gauge-lbl" id="gaugeLbl">dari bulan lalu</div>
       </div>
     </div>
   </section>
@@ -245,7 +245,13 @@
     document.getElementById('statBelanja').textContent = formatRpSingkat(d.totalRencanaRp);
     document.getElementById('statItem').textContent = d.totalItemAktif.toLocaleString('id-ID');
     document.getElementById('statUnit').textContent = d.unitInput.toLocaleString('id-ID');
-    document.getElementById('statCapaian').textContent = d.capaianEfisiensi + '%';
+
+    const efisiensiOk = d.efisiensi !== null;
+    const overTarget = efisiensiOk && d.efisiensi > d.targetEfisiensi;
+
+    document.getElementById('statCapaian').textContent = efisiensiOk ? d.efisiensi + '%' : '-';
+    document.getElementById('statCapaian').style.color = efisiensiOk ? (overTarget ? 'var(--coral)' : 'var(--green-mid)') : 'var(--text-dark)';
+    document.getElementById('targetLabel').textContent = 'Bulan ini vs bulan lalu · target ≤ ' + d.targetEfisiensi + '%';
 
     // ----- chart per instalasi -----
     const labels = Object.keys(d.perInstalasi);
@@ -274,12 +280,24 @@
       });
     }
 
-    // ----- gauge capaian -----
-    document.getElementById('gaugeNum').textContent = d.capaianEfisiensi + '%';
+    // ----- gauge efisiensi (merah kalau di atas target, hijau kalau di bawah/sama) -----
+    const gaugeNum = document.getElementById('gaugeNum');
+    const gaugeLbl = document.getElementById('gaugeLbl');
+    if (!efisiensiOk) {
+      gaugeNum.textContent = 'N/A';
+      gaugeLbl.textContent = 'Data bulan lalu belum lengkap';
+    } else {
+      gaugeNum.textContent = d.efisiensi + '%';
+      gaugeNum.style.color = overTarget ? 'var(--coral)' : 'var(--green-mid)';
+      gaugeLbl.textContent = overTarget ? 'di atas target (boros)' : 'di bawah/sama target';
+    }
+
+    const gaugeColor = overTarget ? '#DC5B45' : '#16A34A';
+    const gaugeValue = efisiensiOk ? Math.min(100, d.efisiensi) : 0;
     if (chartGauge) chartGauge.destroy();
     chartGauge = new Chart(document.getElementById('chartGauge'), {
       type: 'doughnut',
-      data: { datasets: [{ data: [d.capaianEfisiensi, Math.max(0, 100 - d.capaianEfisiensi)], backgroundColor: ['#16A34A', '#E7F5EC'], borderWidth: 0 }] },
+      data: { datasets: [{ data: [gaugeValue, Math.max(0, 100 - gaugeValue)], backgroundColor: [gaugeColor, '#EEF2EE'], borderWidth: 0 }] },
       options: { cutout: '78%', circumference: 360, plugins: { legend: { display: false }, tooltip: { enabled: false } } }
     });
 
