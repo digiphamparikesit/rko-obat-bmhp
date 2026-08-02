@@ -9,285 +9,88 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
 <style>
   :root {
-    --green-deep: #0F3D2E;
-    --green-mid: #16A34A;
-    --green-bright: #3FCF6A;
-    --green-soft: #E7F5EC;
-    --bg: #F4F7F4;
-    --card: #FFFFFF;
-    --text-dark: #14201A;
-    --text-muted: #6B7A72;
-    --amber: #D97706;
-    --coral: #DC5B45;
-    --border: #E4EAE5;
+    --green-deep: #0F3D2E; --green-mid: #16A34A; --green-bright: #3FCF6A; --green-soft: #E7F5EC;
+    --bg: #F4F7F4; --card: #FFFFFF; --text-dark: #14201A; --text-muted: #6B7A72;
+    --amber: #D97706; --coral: #DC5B45; --border: #E4EAE5;
   }
-
   * { box-sizing: border-box; }
-
-  body {
-    margin: 0;
-    background: var(--bg);
-    font-family: 'Inter', -apple-system, sans-serif;
-    color: var(--text-dark);
-  }
-
+  body { margin: 0; background: var(--bg); font-family: 'Inter', -apple-system, sans-serif; color: var(--text-dark); }
   h1, h2, h3, .num { font-family: 'Poppins', sans-serif; }
 
-  header.topbar {
-    background: var(--green-deep);
-    color: #fff;
-    padding: 18px 24px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 12px;
-  }
+  #gate { position: fixed; inset: 0; background: var(--green-deep); display: flex; align-items: center; justify-content: center; z-index: 50; }
+  .gate-box { background: #fff; border-radius: 16px; padding: 32px 28px; width: 100%; max-width: 360px; text-align: center; font-family: 'Inter', sans-serif; }
+  .gate-box .mark { width: 44px; height: 44px; border-radius: 12px; background: var(--green-bright); display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--green-deep); margin: 0 auto 14px; font-family: 'Poppins', sans-serif; }
+  .gate-box h1 { font-size: 17px; margin: 0 0 4px; }
+  .gate-box p { font-size: 13px; color: var(--text-muted); margin: 0 0 18px; font-family: 'Inter', sans-serif; }
+  .gate-box input { width: 100%; padding: 11px 12px; border: 1px solid var(--border); border-radius: 9px; font-size: 14px; margin-bottom: 10px; font-family: 'Inter', sans-serif; }
+  .gate-box button { width: 100%; padding: 11px; border: none; border-radius: 9px; background: var(--green-mid); color: #fff; font-weight: 600; font-size: 14px; cursor: pointer; font-family: 'Inter', sans-serif; }
+  .gate-box button:hover { background: #128a3e; }
+  .gate-msg { font-size: 12.5px; margin-top: 10px; min-height: 16px; }
+  .gate-msg.error { color: var(--coral); }
+  .gate-msg.loading { color: var(--text-muted); }
 
-  .brand {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-
-  .brand .mark {
-    width: 34px;
-    height: 34px;
-    border-radius: 9px;
-    background: var(--green-bright);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 700;
-    font-size: 14px;
-    color: var(--green-deep);
-  }
-
-  .brand .label {
-    font-size: 12px;
-    color: rgba(255,255,255,0.65);
-    line-height: 1.2;
-  }
-
-  .brand .title {
-    font-weight: 700;
-    font-size: 15px;
-    line-height: 1.2;
-  }
-
-  a.back {
-    color: rgba(255,255,255,0.85);
-    text-decoration: none;
-    font-size: 13px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
+  header.topbar { background: var(--green-deep); color: #fff; padding: 18px 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+  .brand { display: flex; align-items: center; gap: 10px; }
+  .brand .mark { width: 34px; height: 34px; border-radius: 9px; background: var(--green-bright); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; color: var(--green-deep); }
+  .brand .label { font-size: 12px; color: rgba(255,255,255,0.65); line-height: 1.2; }
+  .brand .title { font-weight: 700; font-size: 15px; line-height: 1.2; }
+  .topbar-right { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .who { font-size: 12.5px; color: rgba(255,255,255,0.85); }
+  a.back { color: rgba(255,255,255,0.85); text-decoration: none; font-size: 13px; display: flex; align-items: center; gap: 6px; }
   a.back:hover { color: #fff; }
-
-  .filters {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-  }
-
-  select {
-    background: rgba(255,255,255,0.12);
-    color: #fff;
-    border: 1px solid rgba(255,255,255,0.25);
-    border-radius: 8px;
-    padding: 7px 10px;
-    font-size: 13px;
-    font-family: inherit;
-  }
+  select { background: rgba(255,255,255,0.12); color: #fff; border: 1px solid rgba(255,255,255,0.25); border-radius: 8px; padding: 7px 10px; font-size: 13px; font-family: inherit; }
   select option { color: #14201A; }
 
-  main {
-    max-width: 1180px;
-    margin: 0 auto;
-    padding: 28px 20px 60px;
-  }
+  main { max-width: 1180px; margin: 0 auto; padding: 28px 20px 60px; }
+  .page-heading { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
+  .page-heading h1 { font-size: 22px; margin: 0 0 4px; }
+  .page-heading p { margin: 0; color: var(--text-muted); font-size: 13px; }
 
-  .page-heading {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-    margin-bottom: 20px;
-    flex-wrap: wrap;
-    gap: 10px;
-  }
+  .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 22px; }
+  .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 18px 20px; position: relative; overflow: hidden; }
+  .stat-card .icon { width: 30px; height: 30px; border-radius: 8px; background: var(--green-soft); color: var(--green-mid); display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700; margin-bottom: 10px; }
+  .stat-card .num { font-size: 24px; font-weight: 700; line-height: 1.1; }
+  .stat-card .lbl { font-size: 12.5px; color: var(--text-muted); margin-top: 4px; }
 
-  .page-heading h1 {
-    font-size: 22px;
-    margin: 0 0 4px;
-  }
+  .grid-2 { display: grid; grid-template-columns: 1.5fr 1fr; gap: 16px; margin-bottom: 16px; }
+  .panel { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px; }
+  .panel h2 { font-size: 15px; margin: 0 0 2px; }
+  .panel .sub { font-size: 12px; color: var(--text-muted); margin: 0 0 16px; }
 
-  .page-heading p {
-    margin: 0;
-    color: var(--text-muted);
-    font-size: 13px;
-  }
+  .gauge-wrap { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; }
+  .gauge-num { font-size: 30px; font-weight: 700; color: var(--green-mid); margin-top: -78px; }
+  .gauge-lbl { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
 
-  .stat-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 16px;
-    margin-bottom: 22px;
-  }
-
-  .stat-card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 18px 20px;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .stat-card .icon {
-    width: 30px;
-    height: 30px;
-    border-radius: 8px;
-    background: var(--green-soft);
-    color: var(--green-mid);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 15px;
-    font-weight: 700;
-    margin-bottom: 10px;
-  }
-
-  .stat-card .num {
-    font-size: 24px;
-    font-weight: 700;
-    line-height: 1.1;
-  }
-
-  .stat-card .lbl {
-    font-size: 12.5px;
-    color: var(--text-muted);
-    margin-top: 4px;
-  }
-
-  .stat-card .delta {
-    position: absolute;
-    top: 18px;
-    right: 18px;
-    font-size: 11px;
-    font-weight: 600;
-    padding: 3px 8px;
-    border-radius: 999px;
-  }
-  .delta.up { background: var(--green-soft); color: var(--green-mid); }
-  .delta.warn { background: #FDF1E0; color: var(--amber); }
-
-  .grid-2 {
-    display: grid;
-    grid-template-columns: 1.5fr 1fr;
-    gap: 16px;
-    margin-bottom: 16px;
-  }
-
-  .panel {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 20px;
-  }
-
-  .panel h2 {
-    font-size: 15px;
-    margin: 0 0 2px;
-  }
-
-  .panel .sub {
-    font-size: 12px;
-    color: var(--text-muted);
-    margin: 0 0 16px;
-  }
-
-  .gauge-wrap {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
-  }
-
-  .gauge-num {
-    font-size: 30px;
-    font-weight: 700;
-    color: var(--green-mid);
-    margin-top: -78px;
-  }
-
-  .gauge-lbl {
-    font-size: 12px;
-    color: var(--text-muted);
-    margin-top: 4px;
-  }
-
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 13px;
-  }
-
-  th, td {
-    text-align: left;
-    padding: 10px 8px;
-    border-bottom: 1px solid var(--border);
-  }
-
-  th {
-    color: var(--text-muted);
-    font-weight: 600;
-    font-size: 12px;
-    text-transform: uppercase;
-    letter-spacing: 0.3px;
-  }
-
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { text-align: left; padding: 10px 8px; border-bottom: 1px solid var(--border); }
+  th { color: var(--text-muted); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.3px; }
   td.num-cell, th.num-cell { text-align: right; }
 
-  .badge {
-    display: inline-block;
-    font-size: 11px;
-    font-weight: 600;
-    padding: 2px 8px;
-    border-radius: 999px;
-  }
-  .badge.good { background: var(--green-soft); color: var(--green-mid); }
-  .badge.mid { background: #FDF1E0; color: var(--amber); }
-  .badge.low { background: #FBEAE7; color: var(--coral); }
-
-  .list-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 0;
-    border-bottom: 1px solid var(--border);
-    font-size: 13px;
-  }
+  .list-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
   .list-item:last-child { border-bottom: none; }
   .list-item .name { font-weight: 500; }
   .list-item .val { color: var(--text-muted); font-size: 12.5px; }
 
-  footer.note {
-    text-align: center;
-    color: var(--text-muted);
-    font-size: 11.5px;
-    margin-top: 18px;
-  }
+  .empty-mini { text-align: center; color: var(--text-muted); font-size: 12.5px; padding: 20px 0; }
+  footer.note { text-align: center; color: var(--text-muted); font-size: 11.5px; margin-top: 18px; }
 
-  @media (max-width: 900px) {
-    .stat-grid { grid-template-columns: repeat(2, 1fr); }
-    .grid-2 { grid-template-columns: 1fr; }
-  }
+  @media (max-width: 900px) { .stat-grid { grid-template-columns: repeat(2, 1fr); } .grid-2 { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
 
+<div id="gate">
+  <div class="gate-box">
+    <div class="mark">RS</div>
+    <h1>Masuk ke Dashboard RKO</h1>
+    <p>Khusus admin, super admin, gudang farmasi, dan keuangan.</p>
+    <input type="email" id="gateEmail" placeholder="nama@rsamp.go.id" autocomplete="email">
+    <button onclick="login()">Masuk</button>
+    <div class="gate-msg" id="gateMsg"></div>
+  </div>
+</div>
+
+<div id="appContent" style="display:none;">
 <header class="topbar">
   <div class="brand">
     <div class="mark">RS</div>
@@ -296,12 +99,10 @@
       <div class="label">Dashboard RKO — rangkuman rekapan unit</div>
     </div>
   </div>
-  <div class="filters">
-    <select id="filterBulan" aria-label="Pilih bulan">
-      <option>Juli 2026</option>
-      <option>Juni 2026</option>
-      <option>Mei 2026</option>
-    </select>
+  <div class="topbar-right">
+    <span class="who" id="whoLabel"></span>
+    <select id="bulanSelect"></select>
+    <select id="tahunSelect"></select>
     <a class="back" href="index.html">&#8592; Menu utama</a>
   </div>
 </header>
@@ -317,42 +118,41 @@
   <section class="stat-grid">
     <div class="stat-card">
       <div class="icon">Rp</div>
-      <span class="delta up">+4,2%</span>
-      <div class="num" id="statBelanja">Rp 4,80 M</div>
+      <div class="num" id="statBelanja">-</div>
       <div class="lbl">Total rencana belanja</div>
     </div>
     <div class="stat-card">
       <div class="icon">#</div>
-      <div class="num" id="statItem">3.017</div>
+      <div class="num" id="statItem">-</div>
       <div class="lbl">Item obat &amp; BMHP aktif</div>
     </div>
     <div class="stat-card">
       <div class="icon">U</div>
-      <div class="num" id="statUnit">40</div>
+      <div class="num" id="statUnit">-</div>
       <div class="lbl">Unit sudah input kebutuhan</div>
     </div>
     <div class="stat-card">
       <div class="icon">%</div>
-      <span class="delta warn">perlu cek</span>
-      <div class="num" id="statCapaian">86%</div>
-      <div class="lbl">Capaian efisiensi belanja</div>
+      <div class="num" id="statCapaian">-</div>
+      <div class="lbl">Capaian realisasi vs rencana</div>
     </div>
   </section>
 
   <section class="grid-2">
     <div class="panel">
-      <h2>Rencana belanja per instalasi</h2>
-      <p class="sub">Dalam juta rupiah</p>
+      <h2>Estimasi nilai kebutuhan per instalasi</h2>
+      <p class="sub">Kebutuhan unit &times; HPP beli, dalam juta rupiah</p>
       <canvas id="chartInstalasi" height="140"></canvas>
+      <div class="empty-mini" id="chartInstalasiEmpty" style="display:none;">Belum ada data kebutuhan untuk periode ini.</div>
     </div>
 
     <div class="panel">
-      <h2>Capaian efisiensi</h2>
-      <p class="sub">HPP per kunjungan vs target</p>
+      <h2>Capaian realisasi</h2>
+      <p class="sub">Realisasi belanja vs rencana belanja</p>
       <div class="gauge-wrap">
         <canvas id="chartGauge" width="180" height="180"></canvas>
-        <div class="gauge-num">86%</div>
-        <div class="gauge-lbl">dari target bulan ini</div>
+        <div class="gauge-num" id="gaugeNum">-</div>
+        <div class="gauge-lbl">dari rencana bulan ini</div>
       </div>
     </div>
   </section>
@@ -360,106 +160,157 @@
   <section class="grid-2">
     <div class="panel">
       <h2>Rekap per instalasi</h2>
-      <p class="sub">Kunjungan, sisa stok, dan rencana belanja</p>
+      <p class="sub">Estimasi nilai kebutuhan, diurutkan dari terbesar</p>
       <table>
-        <thead>
-          <tr>
-            <th>Instalasi</th>
-            <th class="num-cell">Kunjungan</th>
-            <th class="num-cell">Rencana belanja</th>
-            <th>Capaian</th>
-          </tr>
-        </thead>
-        <tbody id="tableInstalasi">
-          <tr>
-            <td>Instalasi Rawat Inap I</td>
-            <td class="num-cell">1.240</td>
-            <td class="num-cell">Rp 1,12 M</td>
-            <td><span class="badge good">Baik</span></td>
-          </tr>
-          <tr>
-            <td>Instalasi Gawat Darurat</td>
-            <td class="num-cell">2.980</td>
-            <td class="num-cell">Rp 890 Jt</td>
-            <td><span class="badge good">Baik</span></td>
-          </tr>
-          <tr>
-            <td>Instalasi Bedah Sentral</td>
-            <td class="num-cell">410</td>
-            <td class="num-cell">Rp 1,45 M</td>
-            <td><span class="badge mid">Perlu cek</span></td>
-          </tr>
-          <tr>
-            <td>Instalasi Farmasi</td>
-            <td class="num-cell">—</td>
-            <td class="num-cell">Rp 640 Jt</td>
-            <td><span class="badge low">Melebihi</span></td>
-          </tr>
-        </tbody>
+        <thead><tr><th>Instalasi</th><th class="num-cell">Estimasi nilai kebutuhan</th></tr></thead>
+        <tbody id="tableInstalasi"><tr><td colspan="2" class="empty-mini">Memuat data...</td></tr></tbody>
       </table>
     </div>
 
     <div class="panel">
       <h2>Distributor terbesar</h2>
       <p class="sub">Berdasarkan nilai rencana belanja</p>
-      <div id="listDistributor">
-        <div class="list-item"><span class="name">Anugerah Pharmindo Lestari</span><span class="val">Rp 850 Jt</span></div>
-        <div class="list-item"><span class="name">Kimia Farma</span><span class="val">Rp 610 Jt</span></div>
-        <div class="list-item"><span class="name">Parit Padang</span><span class="val">Rp 540 Jt</span></div>
-        <div class="list-item"><span class="name">Merapi Utama Pharma</span><span class="val">Rp 410 Jt</span></div>
-        <div class="list-item"><span class="name">Penta Valent</span><span class="val">Rp 355 Jt</span></div>
-      </div>
+      <div id="listDistributor"><div class="empty-mini">Memuat data...</div></div>
     </div>
   </section>
 
-  <footer class="note">
-    Data contoh untuk tampilan awal. Akan tersambung otomatis ke sheet TRX_KEBUTUHAN, TRX_RENCANA_BELANJA, dan TRX_REALISASI setelah API Apps Script aktif.
-  </footer>
+  <footer class="note">Data ditarik langsung dari spreadsheet DB_RKO_RSAMP lewat API_RKO.gs.</footer>
 </main>
+</div>
 
 <script>
-  // ====== DATA CONTOH — ganti dengan hasil fetch() ke Apps Script Web App ======
-  const dataInstalasi = {
-    labels: ['Rawat Inap I', 'IGD', 'Bedah Sentral', 'Rawat Jalan', 'Farmasi', 'Intensif'],
-    values: [1120, 890, 1450, 620, 640, 980]
-  };
+  const API_URL = "https://script.google.com/macros/s/AKfycbxDRPAfelh1J9dSSgcZaWvaQy-FgKh-fxd01LL_2pU2Bj0LhsPsqyOmVTlhuQKdYLsb/exec";
+  let chartInstalasi, chartGauge;
 
-  const chartInstalasi = new Chart(document.getElementById('chartInstalasi'), {
-    type: 'bar',
-    data: {
-      labels: dataInstalasi.labels,
-      datasets: [{
-        data: dataInstalasi.values,
-        backgroundColor: '#16A34A',
-        borderRadius: 6,
-        maxBarThickness: 34
-      }]
-    },
-    options: {
-      responsive: true,
-      plugins: { legend: { display: false } },
-      scales: {
-        y: { grid: { color: '#EEF2EE' }, ticks: { callback: v => v + ' Jt' } },
-        x: { grid: { display: false } }
-      }
-    }
-  });
+  function login() {
+    const email = document.getElementById('gateEmail').value.trim();
+    const msg = document.getElementById('gateMsg');
+    if (!email) { msg.textContent = 'Isi email dulu.'; msg.className = 'gate-msg error'; return; }
+    msg.textContent = 'Memeriksa akses...'; msg.className = 'gate-msg loading';
 
-  const chartGauge = new Chart(document.getElementById('chartGauge'), {
-    type: 'doughnut',
-    data: {
-      datasets: [{
-        data: [86, 14],
-        backgroundColor: ['#16A34A', '#E7F5EC'],
-        borderWidth: 0
-      }]
-    },
-    options: {
-      cutout: '78%',
-      circumference: 360,
-      plugins: { legend: { display: false }, tooltip: { enabled: false } }
+    fetch(API_URL + '?action=whoAmI&email=' + encodeURIComponent(email))
+      .then(res => res.json())
+      .then(res => {
+        if (!res.success || !res.data) { msg.textContent = 'Email tidak terdaftar atau tidak aktif.'; msg.className = 'gate-msg error'; return; }
+        const allowed = ['ADMIN', 'SUPER_ADMIN', 'GUDANG_FARMASI', 'KEUANGAN'];
+        if (allowed.indexOf(res.data.ROLE) === -1) { msg.textContent = 'Akun Anda (' + res.data.ROLE + ') tidak punya akses ke halaman ini.'; msg.className = 'gate-msg error'; return; }
+        document.getElementById('gate').style.display = 'none';
+        document.getElementById('appContent').style.display = 'block';
+        document.getElementById('whoLabel').textContent = res.data.NAMA + ' · ' + res.data.ROLE;
+        initDashboard();
+      })
+      .catch(() => { msg.textContent = 'Gagal menghubungi server. Cek koneksi.'; msg.className = 'gate-msg error'; });
+  }
+
+  function initDashboard() {
+    const now = new Date();
+    fillPeriodOptions(now.getMonth() + 1, now.getFullYear());
+    loadDashboard();
+    document.getElementById('bulanSelect').addEventListener('change', loadDashboard);
+    document.getElementById('tahunSelect').addEventListener('change', loadDashboard);
+  }
+
+  function fillPeriodOptions(curBulan, curTahun) {
+    const bulanSel = document.getElementById('bulanSelect');
+    const namaBulan = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+    namaBulan.forEach((nm, i) => {
+      const opt = document.createElement('option');
+      opt.value = i + 1; opt.textContent = nm;
+      if (i + 1 === curBulan) opt.selected = true;
+      bulanSel.appendChild(opt);
+    });
+    const tahunSel = document.getElementById('tahunSelect');
+    for (let y = curTahun - 1; y <= curTahun + 1; y++) {
+      const opt = document.createElement('option');
+      opt.value = y; opt.textContent = y;
+      if (y === curTahun) opt.selected = true;
+      tahunSel.appendChild(opt);
     }
-  });
+  }
+
+  function loadDashboard() {
+    const bulan = document.getElementById('bulanSelect').value;
+    const tahun = document.getElementById('tahunSelect').value;
+
+    fetch(API_URL + `?action=getDashboard&bulan=${bulan}&tahun=${tahun}`)
+      .then(r => r.json())
+      .then(res => {
+        if (!res.success) { alert(res.message); return; }
+        renderDashboard(res.data);
+      })
+      .catch(() => { alert('Gagal memuat data dashboard. Cek koneksi.'); });
+  }
+
+  function renderDashboard(d) {
+    document.getElementById('statBelanja').textContent = formatRpSingkat(d.totalRencanaRp);
+    document.getElementById('statItem').textContent = d.totalItemAktif.toLocaleString('id-ID');
+    document.getElementById('statUnit').textContent = d.unitInput.toLocaleString('id-ID');
+    document.getElementById('statCapaian').textContent = d.capaianEfisiensi + '%';
+
+    // ----- chart per instalasi -----
+    const labels = Object.keys(d.perInstalasi);
+    const values = labels.map(l => Math.round(d.perInstalasi[l] / 1000000));
+    const chartEmpty = document.getElementById('chartInstalasiEmpty');
+    const canvas = document.getElementById('chartInstalasi');
+
+    if (labels.length === 0) {
+      canvas.style.display = 'none';
+      chartEmpty.style.display = 'block';
+    } else {
+      canvas.style.display = 'block';
+      chartEmpty.style.display = 'none';
+      if (chartInstalasi) chartInstalasi.destroy();
+      chartInstalasi = new Chart(canvas, {
+        type: 'bar',
+        data: { labels: labels, datasets: [{ data: values, backgroundColor: '#16A34A', borderRadius: 6, maxBarThickness: 34 }] },
+        options: {
+          responsive: true,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { grid: { color: '#EEF2EE' }, ticks: { callback: v => v + ' Jt' } },
+            x: { grid: { display: false } }
+          }
+        }
+      });
+    }
+
+    // ----- gauge capaian -----
+    document.getElementById('gaugeNum').textContent = d.capaianEfisiensi + '%';
+    if (chartGauge) chartGauge.destroy();
+    chartGauge = new Chart(document.getElementById('chartGauge'), {
+      type: 'doughnut',
+      data: { datasets: [{ data: [d.capaianEfisiensi, Math.max(0, 100 - d.capaianEfisiensi)], backgroundColor: ['#16A34A', '#E7F5EC'], borderWidth: 0 }] },
+      options: { cutout: '78%', circumference: 360, plugins: { legend: { display: false }, tooltip: { enabled: false } } }
+    });
+
+    // ----- tabel per instalasi -----
+    const tbody = document.getElementById('tableInstalasi');
+    const sorted = labels.map(l => ({ nama: l, nilai: d.perInstalasi[l] })).sort((a, b) => b.nilai - a.nilai);
+    tbody.innerHTML = sorted.length === 0
+      ? '<tr><td colspan="2" class="empty-mini">Belum ada data untuk periode ini.</td></tr>'
+      : sorted.map(row => `<tr><td>${escapeHtml(row.nama)}</td><td class="num-cell">Rp ${Math.round(row.nilai).toLocaleString('id-ID')}</td></tr>`).join('');
+
+    // ----- top distributor -----
+    const distContainer = document.getElementById('listDistributor');
+    distContainer.innerHTML = d.topDistributor.length === 0
+      ? '<div class="empty-mini">Belum ada rencana belanja untuk periode ini.</div>'
+      : d.topDistributor.map(item => `
+          <div class="list-item">
+            <span class="name">${escapeHtml(item.nama)}</span>
+            <span class="val">Rp ${Math.round(item.nilai).toLocaleString('id-ID')}</span>
+          </div>`).join('');
+  }
+
+  function formatRpSingkat(v) {
+    const n = Number(v) || 0;
+    if (n >= 1000000000) return 'Rp ' + (n / 1000000000).toFixed(2).replace('.', ',') + ' M';
+    if (n >= 1000000) return 'Rp ' + (n / 1000000).toFixed(1).replace('.', ',') + ' Jt';
+    return 'Rp ' + n.toLocaleString('id-ID');
+  }
+
+  function escapeHtml(str) {
+    return String(str).replace(/[&<>"']/g, s => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[s]));
+  }
 </script>
 </body>
 </html>
