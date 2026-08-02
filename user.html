@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>User — RKO RSAMP</title>
+<style>
+  :root {
+    --green-deep: #0F3D2E; --green-mid: #16A34A; --green-bright: #3FCF6A; --green-soft: #E7F5EC;
+    --bg: #F4F7F4; --card: #FFFFFF; --text-dark: #14201A; --text-muted: #6B7A72;
+    --amber: #D97706; --coral: #DC5B45; --border: #E4EAE5;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif; color: var(--text-dark); }
+
+  #gate { position: fixed; inset: 0; background: var(--green-deep); display: flex; align-items: center; justify-content: center; z-index: 50; }
+  .gate-box { background: #fff; border-radius: 16px; padding: 32px 28px; width: 100%; max-width: 360px; text-align: center; }
+  .gate-box .mark { width: 44px; height: 44px; border-radius: 12px; background: var(--green-bright); display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--green-deep); margin: 0 auto 14px; }
+  .gate-box h1 { font-size: 17px; margin: 0 0 4px; }
+  .gate-box p { font-size: 13px; color: var(--text-muted); margin: 0 0 18px; }
+  .gate-box input { width: 100%; padding: 11px 12px; border: 1px solid var(--border); border-radius: 9px; font-size: 14px; margin-bottom: 10px; }
+  .gate-box button { width: 100%; padding: 11px; border: none; border-radius: 9px; background: var(--green-mid); color: #fff; font-weight: 600; font-size: 14px; cursor: pointer; }
+  .gate-box button:hover { background: #128a3e; }
+  .gate-msg { font-size: 12.5px; margin-top: 10px; min-height: 16px; }
+  .gate-msg.error { color: var(--coral); }
+  .gate-msg.loading { color: var(--text-muted); }
+
+  header.topbar { background: var(--green-deep); color: #fff; padding: 18px 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+  .brand { display: flex; align-items: center; gap: 10px; }
+  .brand .mark { width: 34px; height: 34px; border-radius: 9px; background: var(--green-bright); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; color: var(--green-deep); }
+  .brand .label { font-size: 12px; color: rgba(255,255,255,0.65); line-height: 1.2; }
+  .brand .title { font-weight: 700; font-size: 15px; line-height: 1.2; }
+  .topbar-right { display: flex; align-items: center; gap: 14px; }
+  .who { font-size: 12.5px; color: rgba(255,255,255,0.85); }
+  a.back { color: rgba(255,255,255,0.85); text-decoration: none; font-size: 13px; }
+  a.back:hover { color: #fff; }
+
+  main { max-width: 1180px; margin: 0 auto; padding: 24px 20px 60px; }
+
+  .toolbar { display: flex; gap: 12px; align-items: center; margin-bottom: 16px; flex-wrap: wrap; }
+  .toolbar input[type="text"] { flex: 1; min-width: 220px; padding: 10px 14px; border: 1px solid var(--border); border-radius: 9px; font-size: 13.5px; }
+  .toolbar select { padding: 10px 12px; border: 1px solid var(--border); border-radius: 9px; font-size: 13.5px; }
+
+  .info-bar {
+    background: var(--green-soft); border: 1px solid #cdeed9; border-radius: 12px;
+    padding: 12px 16px; font-size: 13px; color: var(--green-deep); margin-bottom: 16px;
+    display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px;
+  }
+
+  .panel { background: var(--card); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { text-align: left; padding: 11px 14px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  th { color: var(--text-muted); font-weight: 600; font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.3px; background: #FAFBFA; }
+
+  input.qty {
+    width: 90px; padding: 7px 9px; border: 1px solid var(--border); border-radius: 7px; font-size: 13px;
+  }
+  input.qty:focus { border-color: var(--green-mid); outline: none; }
+
+  .btn { padding: 7px 14px; border: none; border-radius: 7px; font-weight: 600; font-size: 12.5px; cursor: pointer; }
+  .btn-primary { background: var(--green-mid); color: #fff; }
+  .btn-primary:hover { background: #128a3e; }
+  .btn-primary:disabled { background: #A9C9B5; cursor: default; }
+
+  .status-tag { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 999px; }
+  .status-tag.saved { background: var(--green-soft); color: var(--green-mid); }
+  .status-tag.unsaved { background: #F1F1EE; color: var(--text-muted); }
+
+  .pager { display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; font-size: 12.5px; color: var(--text-muted); }
+  .pager button { background: none; border: 1px solid var(--border); border-radius: 7px; padding: 5px 12px; cursor: pointer; font-size: 12.5px; }
+  .pager button:disabled { opacity: 0.4; cursor: default; }
+
+  .empty-state { text-align: center; padding: 40px 20px; color: var(--text-muted); font-size: 13.5px; }
+</style>
+</head>
+<body>
+
+<div id="gate">
+  <div class="gate-box">
+    <div class="mark">RS</div>
+    <h1>Masuk ke halaman User</h1>
+    <p>Masukkan email yang terdaftar untuk input kebutuhan unit Anda.</p>
+    <input type="email" id="gateEmail" placeholder="nama@rsamp.go.id" autocomplete="email">
+    <button onclick="login()">Masuk</button>
+    <div class="gate-msg" id="gateMsg"></div>
+  </div>
+</div>
+
+<div id="appContent" style="display:none;">
+  <header class="topbar">
+    <div class="brand">
+      <div class="mark">RS</div>
+      <div>
+        <div class="title">RKO RSAMP</div>
+        <div class="label">User — input kebutuhan unit</div>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <span class="who" id="whoLabel"></span>
+      <a class="back" href="index.html">&#8592; Menu utama</a>
+    </div>
+  </header>
+
+  <main>
+    <div class="info-bar">
+      <span id="unitLabel">Unit: -</span>
+      <span id="periodeLabel">Periode: -</span>
+    </div>
+
+    <div class="toolbar">
+      <input type="text" id="searchBox" placeholder="Cari nama barang...">
+      <select id="ruanganSelect" style="display:none;"></select>
+      <select id="bulanSelect"></select>
+      <select id="tahunSelect"></select>
+    </div>
+
+    <div class="panel">
+      <table>
+        <thead>
+          <tr>
+            <th>Nama barang</th>
+            <th>Satuan</th>
+            <th>Sisa stok</th>
+            <th>Kebutuhan</th>
+            <th>Status</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="tableBody">
+          <tr><td colspan="6" class="empty-state">Memuat data...</td></tr>
+        </tbody>
+      </table>
+      <div class="pager">
+        <span id="pagerInfo">-</span>
+        <div>
+          <button id="btnPrev" onclick="changePage(-1)">&larr; Sebelumnya</button>
+          <button id="btnNext" onclick="changePage(1)">Berikutnya &rarr;</button>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+  const API_URL = "https://script.google.com/macros/s/AKfycbxDRPAfelh1J9dSSgcZaWvaQy-FgKh-fxd01LL_2pU2Bj0LhsPsqyOmVTlhuQKdYLsb/exec";
+
+  let currentUser = null;
+  let ruanganList = [];
+  let activeRuanganId = null;
+  let allBarang = [];
+  let existingKebutuhan = {}; // key: barang_id -> {sisa, kebutuhan, saved:true}
+  let filteredBarang = [];
+  let page = 1;
+  const PAGE_SIZE = 25;
+
+  // ---------- LOGIN ----------
+  function login() {
+    const email = document.getElementById('gateEmail').value.trim();
+    const msg = document.getElementById('gateMsg');
+    if (!email) { msg.textContent = 'Isi email dulu.'; msg.className = 'gate-msg error'; return; }
+
+    msg.textContent = 'Memeriksa akses...';
+    msg.className = 'gate-msg loading';
+
+    fetch(API_URL + '?action=whoAmI&email=' + encodeURIComponent(email))
+      .then(res => res.json())
+      .then(res => {
+        if (!res.success || !res.data) {
+          msg.textContent = 'Email tidak terdaftar atau tidak aktif.';
+          msg.className = 'gate-msg error';
+          return;
+        }
+        const allowedRoles = ['USER_RUANGAN', 'ADMIN', 'SUPER_ADMIN'];
+        if (allowedRoles.indexOf(res.data.ROLE) === -1) {
+          msg.textContent = 'Akun Anda (' + res.data.ROLE + ') tidak punya akses ke halaman ini.';
+          msg.className = 'gate-msg error';
+          return;
+        }
+        currentUser = res.data;
+        document.getElementById('gate').style.display = 'none';
+        document.getElementById('appContent').style.display = 'block';
+        document.getElementById('whoLabel').textContent = currentUser.NAMA + ' · ' + currentUser.ROLE;
+        initData();
+      })
+      .catch(() => {
+        msg.textContent = 'Gagal menghubungi server. Cek koneksi.';
+        msg.className = 'gate-msg error';
+      });
+  }
+
+  // ---------- INIT ----------
+  function initData() {
+    const now = new Date();
+    fillPeriodOptions(now.getMonth() + 1, now.getFullYear());
+
+    fetch(API_URL + '?action=getMasterRuangan').then(r => r.json()).then(res => {
+      ruanganList = res.success ? res.data : [];
+
+      if (currentUser.ROLE === 'USER_RUANGAN') {
+        activeRuanganId = currentUser.RUANGAN_ID;
+        const r = ruanganList.find(x => x.ID === activeRuanganId);
+        document.getElementById('unitLabel').textContent = 'Unit: ' + (r ? r.NAMA_RUANGAN : '-');
+      } else {
+        // Admin/Super admin bisa pilih ruangan mana saja
+        const sel = document.getElementById('ruanganSelect');
+        sel.style.display = 'inline-block';
+        ruanganList.forEach(r => {
+          const opt = document.createElement('option');
+          opt.value = r.ID; opt.textContent = r.NAMA_RUANGAN;
+          sel.appendChild(opt);
+        });
+        activeRuanganId = ruanganList.length ? ruanganList[0].ID : null;
+        sel.addEventListener('change', () => {
+          activeRuanganId = Number(sel.value);
+          const r = ruanganList.find(x => x.ID === activeRuanganId);
+          document.getElementById('unitLabel').textContent = 'Unit: ' + (r ? r.NAMA_RUANGAN : '-');
+          loadBarangDanKebutuhan();
+        });
+        const r0 = ruanganList[0];
+        document.getElementById('unitLabel').textContent = 'Unit: ' + (r0 ? r0.NAMA_RUANGAN : '-');
+      }
+
+      loadBarangDanKebutuhan();
+    });
+
+    document.getElementById('bulanSelect').addEventListener('change', () => { updatePeriodeLabel(); loadBarangDanKebutuhan(); });
+    document.getElementById('tahunSelect').addEventListener('change', () => { updatePeriodeLabel(); loadBarangDanKebutuhan(); });
+    document.getElementById('searchBox').addEventListener('input', () => { page = 1; applyFilter(); });
+  }
+
+  function fillPeriodOptions(curBulan, curTahun) {
+    const bulanSel = document.getElementById('bulanSelect');
+    const namaBulan = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+    namaBulan.forEach((nm, i) => {
+      const opt = document.createElement('option');
+      opt.value = i + 1; opt.textContent = nm;
+      if (i + 1 === curBulan) opt.selected = true;
+      bulanSel.appendChild(opt);
+    });
+
+    const tahunSel = document.getElementById('tahunSelect');
+    for (let y = curTahun - 1; y <= curTahun + 1; y++) {
+      const opt = document.createElement('option');
+      opt.value = y; opt.textContent = y;
+      if (y === curTahun) opt.selected = true;
+      tahunSel.appendChild(opt);
+    }
+    updatePeriodeLabel();
+  }
+
+  function updatePeriodeLabel() {
+    const b = document.getElementById('bulanSelect');
+    const t = document.getElementById('tahunSelect').value;
+    document.getElementById('periodeLabel').textContent =
+      'Periode: ' + b.options[b.selectedIndex].textContent + ' ' + t;
+  }
+
+  function loadBarangDanKebutuhan() {
+    const bulan = document.getElementById('bulanSelect').value;
+    const tahun = document.getElementById('tahunSelect').value;
+    document.getElementById('tableBody').innerHTML = '<tr><td colspan="6" class="empty-state">Memuat data...</td></tr>';
+
+    Promise.all([
+      fetch(API_URL + '?action=getMasterBarang').then(r => r.json()),
+      fetch(API_URL + `?action=getKebutuhan&ruangan_id=${activeRuanganId}&bulan=${bulan}&tahun=${tahun}`).then(r => r.json())
+    ]).then(([barangRes, kebutuhanRes]) => {
+      allBarang = (barangRes.success ? barangRes.data : []).filter(b => b.STATUS_AKTIF === true || b.STATUS_AKTIF === 'TRUE');
+
+      existingKebutuhan = {};
+      (kebutuhanRes.success ? kebutuhanRes.data : []).forEach(k => {
+        existingKebutuhan[k.BARANG_ID] = {
+          sisa: k.SISA_STOK_RUANGAN, kebutuhan: k.KEBUTUHAN, saved: true
+        };
+      });
+
+      applyFilter();
+    }).catch(() => {
+      document.getElementById('tableBody').innerHTML = '<tr><td colspan="6" class="empty-state">Gagal memuat data dari server.</td></tr>';
+    });
+  }
+
+  // ---------- FILTER & TABEL ----------
+  function applyFilter() {
+    const q = document.getElementById('searchBox').value.toLowerCase();
+    filteredBarang = allBarang.filter(b => !q || String(b.NAMA_BARANG).toLowerCase().includes(q));
+    renderTable();
+  }
+
+  function renderTable() {
+    const tbody = document.getElementById('tableBody');
+    const start = (page - 1) * PAGE_SIZE;
+    const pageItems = filteredBarang.slice(start, start + PAGE_SIZE);
+
+    if (pageItems.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" class="empty-state">Tidak ada data yang cocok.</td></tr>';
+    } else {
+      tbody.innerHTML = pageItems.map(b => {
+        const existing = existingKebutuhan[b.ID] || { sisa: '', kebutuhan: '', saved: false };
+        return `
+          <tr data-id="${b.ID}">
+            <td>${escapeHtml(b.NAMA_BARANG)}</td>
+            <td>${escapeHtml(b.SATUAN_JUAL || '-')}</td>
+            <td><input type="number" class="qty" data-field="sisa" value="${existing.sisa}" onchange="markUnsaved(${b.ID})"></td>
+            <td><input type="number" class="qty" data-field="kebutuhan" value="${existing.kebutuhan}" onchange="markUnsaved(${b.ID})"></td>
+            <td><span class="status-tag ${existing.saved ? 'saved' : 'unsaved'}" id="status-${b.ID}">${existing.saved ? 'Tersimpan' : 'Belum diisi'}</span></td>
+            <td><button class="btn btn-primary" onclick="saveRow(${b.ID})">Simpan</button></td>
+          </tr>`;
+      }).join('');
+    }
+
+    const totalPages = Math.max(1, Math.ceil(filteredBarang.length / PAGE_SIZE));
+    document.getElementById('pagerInfo').textContent = `${filteredBarang.length} item · Halaman ${page} dari ${totalPages}`;
+    document.getElementById('btnPrev').disabled = page <= 1;
+    document.getElementById('btnNext').disabled = page >= totalPages;
+  }
+
+  function changePage(delta) { page += delta; renderTable(); }
+
+  function markUnsaved(barangId) {
+    const tag = document.getElementById('status-' + barangId);
+    if (tag) { tag.textContent = 'Belum disimpan'; tag.className = 'status-tag unsaved'; }
+  }
+
+  // ---------- SIMPAN ----------
+  function saveRow(barangId) {
+    const row = document.querySelector(`tr[data-id="${barangId}"]`);
+    const sisa = row.querySelector('[data-field="sisa"]').value;
+    const kebutuhan = row.querySelector('[data-field="kebutuhan"]').value;
+    const btn = row.querySelector('button');
+    const tag = document.getElementById('status-' + barangId);
+
+    btn.disabled = true; btn.textContent = 'Menyimpan...';
+
+    fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({
+        action: 'saveKebutuhan',
+        email: currentUser.EMAIL,
+        barang_id: barangId,
+        ruangan_id: activeRuanganId,
+        bulan: document.getElementById('bulanSelect').value,
+        tahun: document.getElementById('tahunSelect').value,
+        sisa_stok_ruangan: Number(sisa) || 0,
+        kebutuhan: Number(kebutuhan) || 0
+      })
+    }).then(r => r.json()).then(res => {
+      btn.disabled = false; btn.textContent = 'Simpan';
+      if (res.success) {
+        tag.textContent = 'Tersimpan'; tag.className = 'status-tag saved';
+        existingKebutuhan[barangId] = { sisa, kebutuhan, saved: true };
+      } else {
+        alert(res.message);
+      }
+    }).catch(() => {
+      btn.disabled = false; btn.textContent = 'Simpan';
+      alert('Gagal menyimpan. Cek koneksi.');
+    });
+  }
+
+  function escapeHtml(str) {
+    return String(str).replace(/[&<>"']/g, s => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[s]));
+  }
+</script>
+</body>
+</html>
