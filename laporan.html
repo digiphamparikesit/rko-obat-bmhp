@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Laporan — RKO RSAMP</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
 <style>
   :root {
     --green-deep: #0F3D2E; --green-mid: #16A34A; --green-bright: #3FCF6A; --green-soft: #E7F5EC;
@@ -11,11 +14,12 @@
     --amber: #D97706; --coral: #DC5B45; --border: #E4EAE5;
   }
   * { box-sizing: border-box; }
-  body { margin: 0; background: var(--bg); font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif; color: var(--text-dark); }
+  body { margin: 0; background: var(--bg); font-family: 'Inter', -apple-system, sans-serif; color: var(--text-dark); }
+  h1, h2, .num { font-family: 'Poppins', sans-serif; }
 
   #gate { position: fixed; inset: 0; background: var(--green-deep); display: flex; align-items: center; justify-content: center; z-index: 50; }
-  .gate-box { background: #fff; border-radius: 16px; padding: 32px 28px; width: 100%; max-width: 360px; text-align: center; }
-  .gate-box .mark { width: 44px; height: 44px; border-radius: 12px; background: var(--green-bright); display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--green-deep); margin: 0 auto 14px; }
+  .gate-box { background: #fff; border-radius: 16px; padding: 32px 28px; width: 100%; max-width: 360px; text-align: center; font-family: 'Inter', sans-serif; }
+  .gate-box .mark { width: 44px; height: 44px; border-radius: 12px; background: var(--green-bright); display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--green-deep); margin: 0 auto 14px; font-family: 'Poppins', sans-serif; }
   .gate-box h1 { font-size: 17px; margin: 0 0 4px; }
   .gate-box p { font-size: 13px; color: var(--text-muted); margin: 0 0 18px; }
   .gate-box input { width: 100%; padding: 11px 12px; border: 1px solid var(--border); border-radius: 9px; font-size: 14px; margin-bottom: 10px; }
@@ -30,33 +34,39 @@
   .brand .mark { width: 34px; height: 34px; border-radius: 9px; background: var(--green-bright); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; color: var(--green-deep); }
   .brand .label { font-size: 12px; color: rgba(255,255,255,0.65); line-height: 1.2; }
   .brand .title { font-weight: 700; font-size: 15px; line-height: 1.2; }
-  .topbar-right { display: flex; align-items: center; gap: 14px; }
+  .topbar-right { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
   .who { font-size: 12.5px; color: rgba(255,255,255,0.85); }
   a.back { color: rgba(255,255,255,0.85); text-decoration: none; font-size: 13px; }
   a.back:hover { color: #fff; }
-  a.open-new {
-    background: rgba(255,255,255,0.15); color: #fff; text-decoration: none;
-    font-size: 12.5px; padding: 7px 12px; border-radius: 8px;
-  }
-  a.open-new:hover { background: rgba(255,255,255,0.25); }
+  select { background: rgba(255,255,255,0.12); color: #fff; border: 1px solid rgba(255,255,255,0.25); border-radius: 8px; padding: 7px 10px; font-size: 13px; font-family: inherit; }
+  select option { color: #14201A; }
 
-  main { max-width: 1280px; margin: 0 auto; padding: 20px; }
+  main { max-width: 1180px; margin: 0 auto; padding: 28px 20px 60px; }
+  .page-heading { margin-bottom: 20px; }
+  .page-heading h1 { font-size: 22px; margin: 0 0 4px; }
+  .page-heading p { margin: 0; color: var(--text-muted); font-size: 13px; }
 
-  .report-wrap {
-    background: var(--card); border: 1px solid var(--border); border-radius: 14px;
-    overflow: hidden; position: relative;
-  }
-  .report-wrap iframe {
-    width: 100%; height: 78vh; min-height: 560px; border: none; display: block;
-  }
+  .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 22px; }
+  .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 18px 20px; }
+  .stat-card .num { font-size: 22px; font-weight: 700; line-height: 1.1; }
+  .stat-card .lbl { font-size: 12.5px; color: var(--text-muted); margin-top: 4px; }
 
-  .fallback {
-    padding: 60px 24px; text-align: center; color: var(--text-muted); font-size: 13.5px;
-  }
-  .fallback a {
-    display: inline-block; margin-top: 14px; background: var(--green-mid); color: #fff;
-    text-decoration: none; padding: 10px 20px; border-radius: 9px; font-weight: 600; font-size: 13.5px;
-  }
+  .panel { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px; margin-bottom: 16px; }
+  .panel h2 { font-size: 15px; margin: 0 0 2px; }
+  .panel .sub { font-size: 12px; color: var(--text-muted); margin: 0 0 16px; }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { text-align: left; padding: 10px 8px; border-bottom: 1px solid var(--border); }
+  th { color: var(--text-muted); font-weight: 600; font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.3px; }
+  td.num-cell, th.num-cell { text-align: right; }
+  .pos { color: var(--green-mid); font-weight: 600; }
+  .neg { color: var(--coral); font-weight: 600; }
+
+  .empty-mini { text-align: center; color: var(--text-muted); font-size: 12.5px; padding: 20px 0; }
+
+  @media (max-width: 900px) { .stat-grid { grid-template-columns: repeat(2, 1fr); } .grid-2 { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
@@ -73,34 +83,64 @@
 </div>
 
 <div id="appContent" style="display:none;">
-  <header class="topbar">
-    <div class="brand">
-      <div class="mark">RS</div>
-      <div>
-        <div class="title">RKO RSAMP</div>
-        <div class="label">Laporan — untuk bagian keuangan</div>
-      </div>
+<header class="topbar">
+  <div class="brand">
+    <div class="mark">RS</div>
+    <div>
+      <div class="title">RKO RSAMP</div>
+      <div class="label">Laporan — rencana vs realisasi belanja</div>
     </div>
-    <div class="topbar-right">
-      <span class="who" id="whoLabel"></span>
-      <a class="open-new" href="https://datastudio.google.com/reporting/12f80ab5-e40e-40a3-95a4-70adc6140b07/page/p_aiznuuks2d" target="_blank" rel="noopener">Buka di tab baru &#8599;</a>
-      <a class="back" href="index.html">&#8592; Menu utama</a>
-    </div>
-  </header>
+  </div>
+  <div class="topbar-right">
+    <span class="who" id="whoLabel"></span>
+    <select id="tahunSelect"></select>
+    <a class="back" href="index.html">&#8592; Menu utama</a>
+  </div>
+</header>
 
-  <main>
-    <div class="report-wrap">
-      <iframe
-        src="https://datastudio.google.com/embed/reporting/12f80ab5-e40e-40a3-95a4-70adc6140b07/page/p_aiznuuks2d"
-        allowfullscreen
-        title="Laporan RKO RSAMP">
-      </iframe>
+<main>
+  <div class="page-heading">
+    <h1>Rekap tahunan</h1>
+    <p>Rencana belanja vs realisasi, per bulan dan per barang, untuk 1 tahun anggaran</p>
+  </div>
+
+  <section class="stat-grid">
+    <div class="stat-card"><div class="num" id="statRencana">-</div><div class="lbl">Total rencana belanja (tahun ini)</div></div>
+    <div class="stat-card"><div class="num" id="statRealisasi">-</div><div class="lbl">Total realisasi belanja</div></div>
+    <div class="stat-card"><div class="num" id="statSelisih">-</div><div class="lbl">Selisih rencana &ndash; realisasi</div></div>
+    <div class="stat-card"><div class="num" id="statCapaian">-</div><div class="lbl">Capaian realisasi</div></div>
+  </section>
+
+  <div class="panel">
+    <h2>Tren bulanan: rencana vs realisasi</h2>
+    <p class="sub">Dalam juta rupiah</p>
+    <canvas id="chartTren" height="90"></canvas>
+  </div>
+
+  <div class="grid-2">
+    <div class="panel">
+      <h2>10 barang dengan realisasi belanja terbesar</h2>
+      <p class="sub">Sepanjang tahun berjalan</p>
+      <canvas id="chartTopBarang" height="220"></canvas>
+      <div class="empty-mini" id="topBarangEmpty" style="display:none;">Belum ada data realisasi tahun ini.</div>
     </div>
-  </main>
+
+    <div class="panel">
+      <h2>Rekap per bulan</h2>
+      <p class="sub">Rencana, realisasi, dan capaian</p>
+      <table>
+        <thead><tr><th>Bulan</th><th class="num-cell">Rencana</th><th class="num-cell">Realisasi</th><th class="num-cell">Capaian</th></tr></thead>
+        <tbody id="tableBulanan"><tr><td colspan="4" class="empty-mini">Memuat data...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</main>
 </div>
 
 <script>
   const API_URL = "https://script.google.com/macros/s/AKfycbxDRPAfelh1J9dSSgcZaWvaQy-FgKh-fxd01LL_2pU2Bj0LhsPsqyOmVTlhuQKdYLsb/exec";
+  const NAMA_BULAN = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+  let chartTren, chartTopBarang;
 
   function login() {
     const email = document.getElementById('gateEmail').value.trim();
@@ -117,8 +157,126 @@
         document.getElementById('gate').style.display = 'none';
         document.getElementById('appContent').style.display = 'block';
         document.getElementById('whoLabel').textContent = res.data.NAMA + ' · ' + res.data.ROLE;
+        initLaporan();
       })
       .catch(() => { msg.textContent = 'Gagal menghubungi server. Cek koneksi.'; msg.className = 'gate-msg error'; });
+  }
+
+  function initLaporan() {
+    const curTahun = new Date().getFullYear();
+    const sel = document.getElementById('tahunSelect');
+    for (let y = curTahun - 2; y <= curTahun; y++) {
+      const opt = document.createElement('option');
+      opt.value = y; opt.textContent = y;
+      if (y === curTahun) opt.selected = true;
+      sel.appendChild(opt);
+    }
+    sel.addEventListener('change', loadLaporan);
+    loadLaporan();
+  }
+
+  function loadLaporan() {
+    const tahun = document.getElementById('tahunSelect').value;
+
+    Promise.all([
+      fetch(API_URL + `?action=getRencanaBelanja&tahun=${tahun}`).then(r => r.json()),
+      fetch(API_URL + `?action=getRealisasi&tahun=${tahun}`).then(r => r.json()),
+      fetch(API_URL + '?action=getMasterBarang').then(r => r.json())
+    ]).then(([rencanaRes, realisasiRes, barangRes]) => {
+      const rencana = rencanaRes.success ? rencanaRes.data : [];
+      const realisasi = realisasiRes.success ? realisasiRes.data : [];
+      const barangMap = {};
+      (barangRes.success ? barangRes.data : []).forEach(b => { barangMap[b.ID] = b; });
+
+      renderLaporan(rencana, realisasi, barangMap);
+    }).catch(() => {
+      document.getElementById('tableBulanan').innerHTML = '<tr><td colspan="4" class="empty-mini">Gagal memuat data dari server.</td></tr>';
+    });
+  }
+
+  function renderLaporan(rencana, realisasi, barangMap) {
+    // ----- agregasi per bulan -----
+    const rencanaPerBulan = new Array(12).fill(0);
+    const realisasiPerBulan = new Array(12).fill(0);
+
+    rencana.forEach(r => { const b = Number(r.BULAN) - 1; if (b >= 0 && b < 12) rencanaPerBulan[b] += Number(r.RENCANA_RP) || 0; });
+    realisasi.forEach(r => { const b = Number(r.BULAN) - 1; if (b >= 0 && b < 12) realisasiPerBulan[b] += Number(r.REALISASI_RP) || 0; });
+
+    const totalRencana = rencanaPerBulan.reduce((a, b) => a + b, 0);
+    const totalRealisasi = realisasiPerBulan.reduce((a, b) => a + b, 0);
+    const selisih = totalRencana - totalRealisasi;
+    const capaian = totalRencana > 0 ? Math.round((totalRealisasi / totalRencana) * 100) : 0;
+
+    document.getElementById('statRencana').textContent = formatRpSingkat(totalRencana);
+    document.getElementById('statRealisasi').textContent = formatRpSingkat(totalRealisasi);
+    document.getElementById('statSelisih').textContent = formatRpSingkat(Math.abs(selisih));
+    document.getElementById('statSelisih').className = 'num ' + (selisih >= 0 ? 'pos' : 'neg');
+    document.getElementById('statCapaian').textContent = capaian + '%';
+
+    // ----- chart tren -----
+    if (chartTren) chartTren.destroy();
+    chartTren = new Chart(document.getElementById('chartTren'), {
+      type: 'bar',
+      data: {
+        labels: NAMA_BULAN,
+        datasets: [
+          { label: 'Rencana', data: rencanaPerBulan.map(v => Math.round(v / 1000000)), backgroundColor: '#CDEAD9', borderRadius: 5, maxBarThickness: 22 },
+          { label: 'Realisasi', data: realisasiPerBulan.map(v => Math.round(v / 1000000)), backgroundColor: '#16A34A', borderRadius: 5, maxBarThickness: 22 }
+        ]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { position: 'top', labels: { boxWidth: 12, font: { size: 12 } } } },
+        scales: { y: { grid: { color: '#EEF2EE' }, ticks: { callback: v => v + ' Jt' } }, x: { grid: { display: false } } }
+      }
+    });
+
+    // ----- top 10 barang berdasarkan realisasi -----
+    const perBarang = {};
+    realisasi.forEach(r => {
+      perBarang[r.BARANG_ID] = (perBarang[r.BARANG_ID] || 0) + (Number(r.REALISASI_RP) || 0);
+    });
+    const topBarang = Object.keys(perBarang)
+      .map(id => ({ nama: barangMap[id] ? barangMap[id].NAMA_BARANG : 'Barang tidak dikenal', nilai: perBarang[id] }))
+      .sort((a, b) => b.nilai - a.nilai)
+      .slice(0, 10);
+
+    const topCanvas = document.getElementById('chartTopBarang');
+    const topEmpty = document.getElementById('topBarangEmpty');
+    if (topBarang.length === 0) {
+      topCanvas.style.display = 'none'; topEmpty.style.display = 'block';
+    } else {
+      topCanvas.style.display = 'block'; topEmpty.style.display = 'none';
+      if (chartTopBarang) chartTopBarang.destroy();
+      chartTopBarang = new Chart(topCanvas, {
+        type: 'bar',
+        data: {
+          labels: topBarang.map(b => b.nama.length > 28 ? b.nama.slice(0, 26) + '…' : b.nama),
+          datasets: [{ data: topBarang.map(b => Math.round(b.nilai / 1000000)), backgroundColor: '#16A34A', borderRadius: 5 }]
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          plugins: { legend: { display: false } },
+          scales: { x: { grid: { color: '#EEF2EE' }, ticks: { callback: v => v + ' Jt' } }, y: { grid: { display: false } } }
+        }
+      });
+    }
+
+    // ----- tabel rekap bulanan -----
+    const tbody = document.getElementById('tableBulanan');
+    tbody.innerHTML = NAMA_BULAN.map((nm, i) => {
+      const r = rencanaPerBulan[i], a = realisasiPerBulan[i];
+      const c = r > 0 ? Math.round((a / r) * 100) : (a > 0 ? 100 : 0);
+      return `<tr><td>${nm}</td><td class="num-cell">Rp ${Math.round(r).toLocaleString('id-ID')}</td><td class="num-cell">Rp ${Math.round(a).toLocaleString('id-ID')}</td><td class="num-cell">${c}%</td></tr>`;
+    }).join('');
+  }
+
+  function formatRpSingkat(v) {
+    const n = Number(v) || 0;
+    if (n >= 1000000000) return 'Rp ' + (n / 1000000000).toFixed(2).replace('.', ',') + ' M';
+    if (n >= 1000000) return 'Rp ' + (n / 1000000).toFixed(1).replace('.', ',') + ' Jt';
+    return 'Rp ' + n.toLocaleString('id-ID');
   }
 </script>
 </body>
