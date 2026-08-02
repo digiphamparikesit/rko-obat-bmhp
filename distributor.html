@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Distributor — RKO RSAMP</title>
+<style>
+  :root {
+    --green-deep: #0F3D2E; --green-mid: #16A34A; --green-bright: #3FCF6A; --green-soft: #E7F5EC;
+    --bg: #F4F7F4; --card: #FFFFFF; --text-dark: #14201A; --text-muted: #6B7A72;
+    --amber: #D97706; --coral: #DC5B45; --border: #E4EAE5;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif; color: var(--text-dark); }
+
+  #gate { position: fixed; inset: 0; background: var(--green-deep); display: flex; align-items: center; justify-content: center; z-index: 50; }
+  .gate-box { background: #fff; border-radius: 16px; padding: 32px 28px; width: 100%; max-width: 360px; text-align: center; }
+  .gate-box .mark { width: 44px; height: 44px; border-radius: 12px; background: var(--green-bright); display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--green-deep); margin: 0 auto 14px; }
+  .gate-box h1 { font-size: 17px; margin: 0 0 4px; }
+  .gate-box p { font-size: 13px; color: var(--text-muted); margin: 0 0 18px; }
+  .gate-box input { width: 100%; padding: 11px 12px; border: 1px solid var(--border); border-radius: 9px; font-size: 14px; margin-bottom: 10px; }
+  .gate-box button { width: 100%; padding: 11px; border: none; border-radius: 9px; background: var(--green-mid); color: #fff; font-weight: 600; font-size: 14px; cursor: pointer; }
+  .gate-box button:hover { background: #128a3e; }
+  .gate-msg { font-size: 12.5px; margin-top: 10px; min-height: 16px; }
+  .gate-msg.error { color: var(--coral); }
+  .gate-msg.loading { color: var(--text-muted); }
+
+  header.topbar { background: var(--green-deep); color: #fff; padding: 18px 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+  .brand { display: flex; align-items: center; gap: 10px; }
+  .brand .mark { width: 34px; height: 34px; border-radius: 9px; background: var(--green-bright); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; color: var(--green-deep); }
+  .brand .label { font-size: 12px; color: rgba(255,255,255,0.65); line-height: 1.2; }
+  .brand .title { font-weight: 700; font-size: 15px; line-height: 1.2; }
+  .topbar-right { display: flex; align-items: center; gap: 14px; }
+  .who { font-size: 12.5px; color: rgba(255,255,255,0.85); }
+  a.back { color: rgba(255,255,255,0.85); text-decoration: none; font-size: 13px; }
+  a.back:hover { color: #fff; }
+
+  main { max-width: 1000px; margin: 0 auto; padding: 24px 20px 60px; }
+
+  .stat-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 18px; }
+  .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 16px 18px; }
+  .stat-card .num { font-size: 20px; font-weight: 700; }
+  .stat-card .lbl { font-size: 12px; color: var(--text-muted); margin-top: 3px; }
+
+  .toolbar { display: flex; gap: 12px; align-items: center; margin-bottom: 16px; flex-wrap: wrap; }
+  .toolbar input[type="text"] { flex: 1; min-width: 220px; padding: 10px 14px; border: 1px solid var(--border); border-radius: 9px; font-size: 13.5px; }
+  .toolbar select { padding: 10px 12px; border: 1px solid var(--border); border-radius: 9px; font-size: 13.5px; }
+
+  .dist-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; margin-bottom: 12px; overflow: hidden; }
+  .dist-head {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 16px 20px; cursor: pointer;
+  }
+  .dist-head:hover { background: #FAFBFA; }
+  .dist-name { font-weight: 600; font-size: 14.5px; }
+  .dist-contact { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+  .dist-right { display: flex; align-items: center; gap: 18px; }
+  .dist-total { text-align: right; }
+  .dist-total .rp { font-weight: 700; font-size: 15px; color: var(--green-mid); }
+  .dist-total .cnt { font-size: 11.5px; color: var(--text-muted); }
+  .chevron { transition: transform 0.15s ease; color: var(--text-muted); font-size: 13px; }
+  .dist-card.open .chevron { transform: rotate(90deg); }
+
+  .dist-body { display: none; border-top: 1px solid var(--border); }
+  .dist-card.open .dist-body { display: block; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  th, td { text-align: left; padding: 9px 20px; border-bottom: 1px solid var(--border); }
+  th { color: var(--text-muted); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.3px; background: #FAFBFA; }
+  td.num, th.num { text-align: right; }
+
+  .empty-state { text-align: center; padding: 40px 20px; color: var(--text-muted); font-size: 13.5px; }
+</style>
+</head>
+<body>
+
+<div id="gate">
+  <div class="gate-box">
+    <div class="mark">RS</div>
+    <h1>Masuk ke halaman Distributor</h1>
+    <p>Lihat rekap nilai rencana belanja per distributor.</p>
+    <input type="email" id="gateEmail" placeholder="nama@rsamp.go.id" autocomplete="email">
+    <button onclick="login()">Masuk</button>
+    <div class="gate-msg" id="gateMsg"></div>
+  </div>
+</div>
+
+<div id="appContent" style="display:none;">
+  <header class="topbar">
+    <div class="brand">
+      <div class="mark">RS</div>
+      <div>
+        <div class="title">RKO RSAMP</div>
+        <div class="label">Distributor — nilai rencana belanja</div>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <span class="who" id="whoLabel"></span>
+      <a class="back" href="index.html">&#8592; Menu utama</a>
+    </div>
+  </header>
+
+  <main>
+    <div class="stat-row">
+      <div class="stat-card">
+        <div class="num" id="statTotalDist">-</div>
+        <div class="lbl">Distributor dengan rencana belanja</div>
+      </div>
+      <div class="stat-card">
+        <div class="num" id="statTotalRp">Rp -</div>
+        <div class="lbl">Total rencana belanja periode ini</div>
+      </div>
+      <div class="stat-card">
+        <div class="num" id="statTotalItem">-</div>
+        <div class="lbl">Total item dipesan</div>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <input type="text" id="searchBox" placeholder="Cari nama distributor...">
+      <select id="bulanSelect"></select>
+      <select id="tahunSelect"></select>
+    </div>
+
+    <div id="distList">
+      <div class="empty-state">Memuat data...</div>
+    </div>
+  </main>
+</div>
+
+<script>
+  const API_URL = "https://script.google.com/macros/s/AKfycbxDRPAfelh1J9dSSgcZaWvaQy-FgKh-fxd01LL_2pU2Bj0LhsPsqyOmVTlhuQKdYLsb/exec";
+
+  let currentUser = null;
+  let distributorList = [];
+  let barangMap = {};
+  let grouped = {}; // distributor_id -> { total, items: [{nama, qty, satuan, rp}] }
+
+  function login() {
+    const email = document.getElementById('gateEmail').value.trim();
+    const msg = document.getElementById('gateMsg');
+    if (!email) { msg.textContent = 'Isi email dulu.'; msg.className = 'gate-msg error'; return; }
+    msg.textContent = 'Memeriksa akses...'; msg.className = 'gate-msg loading';
+
+    fetch(API_URL + '?action=whoAmI&email=' + encodeURIComponent(email))
+      .then(res => res.json())
+      .then(res => {
+        if (!res.success || !res.data) { msg.textContent = 'Email tidak terdaftar atau tidak aktif.'; msg.className = 'gate-msg error'; return; }
+        const allowed = ['ADMIN', 'SUPER_ADMIN', 'GUDANG_FARMASI', 'KEUANGAN', 'DISTRIBUTOR_VIEW'];
+        if (allowed.indexOf(res.data.ROLE) === -1) { msg.textContent = 'Akun Anda (' + res.data.ROLE + ') tidak punya akses ke halaman ini.'; msg.className = 'gate-msg error'; return; }
+        currentUser = res.data;
+        document.getElementById('gate').style.display = 'none';
+        document.getElementById('appContent').style.display = 'block';
+        document.getElementById('whoLabel').textContent = currentUser.NAMA + ' · ' + currentUser.ROLE;
+        initData();
+      })
+      .catch(() => { msg.textContent = 'Gagal menghubungi server. Cek koneksi.'; msg.className = 'gate-msg error'; });
+  }
+
+  function initData() {
+    const now = new Date();
+    fillPeriodOptions(now.getMonth() + 1, now.getFullYear());
+
+    fetch(API_URL + '?action=getMasterDistributor').then(r => r.json()).then(res => {
+      distributorList = res.success ? res.data : [];
+      loadAllData();
+    });
+
+    document.getElementById('bulanSelect').addEventListener('change', loadAllData);
+    document.getElementById('tahunSelect').addEventListener('change', loadAllData);
+    document.getElementById('searchBox').addEventListener('input', renderList);
+  }
+
+  function fillPeriodOptions(curBulan, curTahun) {
+    const bulanSel = document.getElementById('bulanSelect');
+    const namaBulan = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+    namaBulan.forEach((nm, i) => {
+      const opt = document.createElement('option');
+      opt.value = i + 1; opt.textContent = nm;
+      if (i + 1 === curBulan) opt.selected = true;
+      bulanSel.appendChild(opt);
+    });
+    const tahunSel = document.getElementById('tahunSelect');
+    for (let y = curTahun - 1; y <= curTahun + 1; y++) {
+      const opt = document.createElement('option');
+      opt.value = y; opt.textContent = y;
+      if (y === curTahun) opt.selected = true;
+      tahunSel.appendChild(opt);
+    }
+  }
+
+  function loadAllData() {
+    const bulan = document.getElementById('bulanSelect').value;
+    const tahun = document.getElementById('tahunSelect').value;
+    document.getElementById('distList').innerHTML = '<div class="empty-state">Memuat data...</div>';
+
+    Promise.all([
+      fetch(API_URL + '?action=getMasterBarang').then(r => r.json()),
+      fetch(API_URL + `?action=getRencanaBelanja&bulan=${bulan}&tahun=${tahun}`).then(r => r.json())
+    ]).then(([barangRes, rencanaRes]) => {
+      barangMap = {};
+      (barangRes.success ? barangRes.data : []).forEach(b => { barangMap[b.ID] = b; });
+
+      grouped = {};
+      let totalItemCount = 0, totalRp = 0;
+
+      (rencanaRes.success ? rencanaRes.data : []).forEach(r => {
+        const distId = r.DISTRIBUTOR_ID;
+        if (!distId) return;
+        if (!grouped[distId]) grouped[distId] = { total: 0, items: [] };
+
+        const barang = barangMap[r.BARANG_ID];
+        const rp = Number(r.RENCANA_RP) || 0;
+
+        grouped[distId].total += rp;
+        grouped[distId].items.push({
+          nama: barang ? barang.NAMA_BARANG : 'Barang tidak dikenal',
+          qty: r.RENCANA_QTY_SATUAN_BELI,
+          satuan: barang ? barang.SATUAN_BELI : '-',
+          rp: rp
+        });
+
+        totalItemCount++;
+        totalRp += rp;
+      });
+
+      document.getElementById('statTotalDist').textContent = Object.keys(grouped).length.toLocaleString('id-ID');
+      document.getElementById('statTotalRp').textContent = 'Rp ' + totalRp.toLocaleString('id-ID');
+      document.getElementById('statTotalItem').textContent = totalItemCount.toLocaleString('id-ID');
+
+      renderList();
+    }).catch(() => {
+      document.getElementById('distList').innerHTML = '<div class="empty-state">Gagal memuat data dari server.</div>';
+    });
+  }
+
+  function renderList() {
+    const q = document.getElementById('searchBox').value.toLowerCase();
+    const container = document.getElementById('distList');
+
+    const rows = distributorList
+      .filter(d => grouped[d.ID]) // hanya distributor yang punya rencana belanja periode ini
+      .filter(d => !q || d.NAMA_DISTRIBUTOR.toLowerCase().includes(q))
+      .sort((a, b) => grouped[b.ID].total - grouped[a.ID].total);
+
+    if (rows.length === 0) {
+      container.innerHTML = '<div class="empty-state">Belum ada rencana belanja untuk periode ini.</div>';
+      return;
+    }
+
+    container.innerHTML = rows.map(d => {
+      const data = grouped[d.ID];
+      const itemsHtml = data.items.map(it => `
+        <tr>
+          <td>${escapeHtml(it.nama)}</td>
+          <td class="num">${Number(it.qty || 0).toLocaleString('id-ID')} ${escapeHtml(it.satuan || '')}</td>
+          <td class="num">Rp ${Number(it.rp || 0).toLocaleString('id-ID')}</td>
+        </tr>`).join('');
+
+      return `
+        <div class="dist-card" id="card-${d.ID}">
+          <div class="dist-head" onclick="toggleCard(${d.ID})">
+            <div>
+              <div class="dist-name">${escapeHtml(d.NAMA_DISTRIBUTOR)}</div>
+              <div class="dist-contact">${escapeHtml(d.KONTAK || 'Kontak belum diisi')}</div>
+            </div>
+            <div class="dist-right">
+              <div class="dist-total">
+                <div class="rp">Rp ${data.total.toLocaleString('id-ID')}</div>
+                <div class="cnt">${data.items.length} item</div>
+              </div>
+              <span class="chevron">&#9656;</span>
+            </div>
+          </div>
+          <div class="dist-body">
+            <table>
+              <thead><tr><th>Nama barang</th><th class="num">Qty rencana beli</th><th class="num">Nilai (Rp)</th></tr></thead>
+              <tbody>${itemsHtml}</tbody>
+            </table>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  function toggleCard(id) {
+    document.getElementById('card-' + id).classList.toggle('open');
+  }
+
+  function escapeHtml(str) {
+    return String(str).replace(/[&<>"']/g, s => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[s]));
+  }
+</script>
+</body>
+</html>
