@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Laporan — RKO RSAMP</title>
+<style>
+  :root {
+    --green-deep: #0F3D2E; --green-mid: #16A34A; --green-bright: #3FCF6A; --green-soft: #E7F5EC;
+    --bg: #F4F7F4; --card: #FFFFFF; --text-dark: #14201A; --text-muted: #6B7A72;
+    --amber: #D97706; --coral: #DC5B45; --border: #E4EAE5;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif; color: var(--text-dark); }
+
+  #gate { position: fixed; inset: 0; background: var(--green-deep); display: flex; align-items: center; justify-content: center; z-index: 50; }
+  .gate-box { background: #fff; border-radius: 16px; padding: 32px 28px; width: 100%; max-width: 360px; text-align: center; }
+  .gate-box .mark { width: 44px; height: 44px; border-radius: 12px; background: var(--green-bright); display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--green-deep); margin: 0 auto 14px; }
+  .gate-box h1 { font-size: 17px; margin: 0 0 4px; }
+  .gate-box p { font-size: 13px; color: var(--text-muted); margin: 0 0 18px; }
+  .gate-box input { width: 100%; padding: 11px 12px; border: 1px solid var(--border); border-radius: 9px; font-size: 14px; margin-bottom: 10px; }
+  .gate-box button { width: 100%; padding: 11px; border: none; border-radius: 9px; background: var(--green-mid); color: #fff; font-weight: 600; font-size: 14px; cursor: pointer; }
+  .gate-box button:hover { background: #128a3e; }
+  .gate-msg { font-size: 12.5px; margin-top: 10px; min-height: 16px; }
+  .gate-msg.error { color: var(--coral); }
+  .gate-msg.loading { color: var(--text-muted); }
+
+  header.topbar { background: var(--green-deep); color: #fff; padding: 18px 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+  .brand { display: flex; align-items: center; gap: 10px; }
+  .brand .mark { width: 34px; height: 34px; border-radius: 9px; background: var(--green-bright); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; color: var(--green-deep); }
+  .brand .label { font-size: 12px; color: rgba(255,255,255,0.65); line-height: 1.2; }
+  .brand .title { font-weight: 700; font-size: 15px; line-height: 1.2; }
+  .topbar-right { display: flex; align-items: center; gap: 14px; }
+  .who { font-size: 12.5px; color: rgba(255,255,255,0.85); }
+  a.back { color: rgba(255,255,255,0.85); text-decoration: none; font-size: 13px; }
+  a.back:hover { color: #fff; }
+  a.open-new {
+    background: rgba(255,255,255,0.15); color: #fff; text-decoration: none;
+    font-size: 12.5px; padding: 7px 12px; border-radius: 8px;
+  }
+  a.open-new:hover { background: rgba(255,255,255,0.25); }
+
+  main { max-width: 1280px; margin: 0 auto; padding: 20px; }
+
+  .report-wrap {
+    background: var(--card); border: 1px solid var(--border); border-radius: 14px;
+    overflow: hidden; position: relative;
+  }
+  .report-wrap iframe {
+    width: 100%; height: 78vh; min-height: 560px; border: none; display: block;
+  }
+
+  .fallback {
+    padding: 60px 24px; text-align: center; color: var(--text-muted); font-size: 13.5px;
+  }
+  .fallback a {
+    display: inline-block; margin-top: 14px; background: var(--green-mid); color: #fff;
+    text-decoration: none; padding: 10px 20px; border-radius: 9px; font-weight: 600; font-size: 13.5px;
+  }
+</style>
+</head>
+<body>
+
+<div id="gate">
+  <div class="gate-box">
+    <div class="mark">RS</div>
+    <h1>Masuk ke Laporan</h1>
+    <p>Khusus admin, super admin, dan bagian keuangan.</p>
+    <input type="email" id="gateEmail" placeholder="nama@rsamp.go.id" autocomplete="email">
+    <button onclick="login()">Masuk</button>
+    <div class="gate-msg" id="gateMsg"></div>
+  </div>
+</div>
+
+<div id="appContent" style="display:none;">
+  <header class="topbar">
+    <div class="brand">
+      <div class="mark">RS</div>
+      <div>
+        <div class="title">RKO RSAMP</div>
+        <div class="label">Laporan — untuk bagian keuangan</div>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <span class="who" id="whoLabel"></span>
+      <a class="open-new" href="https://datastudio.google.com/reporting/12f80ab5-e40e-40a3-95a4-70adc6140b07/page/p_aiznuuks2d" target="_blank" rel="noopener">Buka di tab baru &#8599;</a>
+      <a class="back" href="index.html">&#8592; Menu utama</a>
+    </div>
+  </header>
+
+  <main>
+    <div class="report-wrap">
+      <iframe
+        src="https://datastudio.google.com/embed/reporting/12f80ab5-e40e-40a3-95a4-70adc6140b07/page/p_aiznuuks2d"
+        allowfullscreen
+        title="Laporan RKO RSAMP">
+      </iframe>
+    </div>
+  </main>
+</div>
+
+<script>
+  const API_URL = "https://script.google.com/macros/s/AKfycbxDRPAfelh1J9dSSgcZaWvaQy-FgKh-fxd01LL_2pU2Bj0LhsPsqyOmVTlhuQKdYLsb/exec";
+
+  function login() {
+    const email = document.getElementById('gateEmail').value.trim();
+    const msg = document.getElementById('gateMsg');
+    if (!email) { msg.textContent = 'Isi email dulu.'; msg.className = 'gate-msg error'; return; }
+    msg.textContent = 'Memeriksa akses...'; msg.className = 'gate-msg loading';
+
+    fetch(API_URL + '?action=whoAmI&email=' + encodeURIComponent(email))
+      .then(res => res.json())
+      .then(res => {
+        if (!res.success || !res.data) { msg.textContent = 'Email tidak terdaftar atau tidak aktif.'; msg.className = 'gate-msg error'; return; }
+        const allowed = ['ADMIN', 'SUPER_ADMIN', 'KEUANGAN'];
+        if (allowed.indexOf(res.data.ROLE) === -1) { msg.textContent = 'Akun Anda (' + res.data.ROLE + ') tidak punya akses ke halaman ini.'; msg.className = 'gate-msg error'; return; }
+        document.getElementById('gate').style.display = 'none';
+        document.getElementById('appContent').style.display = 'block';
+        document.getElementById('whoLabel').textContent = res.data.NAMA + ' · ' + res.data.ROLE;
+      })
+      .catch(() => { msg.textContent = 'Gagal menghubungi server. Cek koneksi.'; msg.className = 'gate-msg error'; });
+  }
+</script>
+</body>
+</html>
