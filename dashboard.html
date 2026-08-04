@@ -6,7 +6,7 @@
 <title>Dashboard RKO — RKO RSAMP</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <style>
   :root {
     --green-deep: #0F3D2E; --green-mid: #16A34A; --green-bright: #3FCF6A; --green-soft: #E7F5EC;
@@ -236,9 +236,14 @@
       .then(r => r.json())
       .then(res => {
         if (!res.success) { alert(res.message); return; }
-        renderDashboard(res.data);
+        try {
+          renderDashboard(res.data);
+        } catch (err) {
+          console.error('Gagal render dashboard:', err);
+          alert('Data berhasil diambil, tapi ada error saat menampilkan: ' + err.message);
+        }
       })
-      .catch(() => { alert('Gagal memuat data dashboard. Cek koneksi.'); });
+      .catch(() => { alert('Gagal mengambil data dari server. Cek koneksi internet.'); });
   }
 
   function renderDashboard(d) {
@@ -259,7 +264,11 @@
     const chartEmpty = document.getElementById('chartInstalasiEmpty');
     const canvas = document.getElementById('chartInstalasi');
 
-    if (labels.length === 0) {
+    if (typeof Chart === 'undefined') {
+      canvas.style.display = 'none';
+      chartEmpty.style.display = 'block';
+      chartEmpty.textContent = 'Grafik gagal dimuat (library Chart.js diblokir jaringan). Angka lain tetap akurat.';
+    } else if (labels.length === 0) {
       canvas.style.display = 'none';
       chartEmpty.style.display = 'block';
     } else {
@@ -294,12 +303,14 @@
 
     const gaugeColor = overTarget ? '#DC5B45' : '#16A34A';
     const gaugeValue = efisiensiOk ? Math.min(100, d.efisiensi) : 0;
-    if (chartGauge) chartGauge.destroy();
-    chartGauge = new Chart(document.getElementById('chartGauge'), {
-      type: 'doughnut',
-      data: { datasets: [{ data: [gaugeValue, Math.max(0, 100 - gaugeValue)], backgroundColor: [gaugeColor, '#EEF2EE'], borderWidth: 0 }] },
-      options: { cutout: '78%', circumference: 360, plugins: { legend: { display: false }, tooltip: { enabled: false } } }
-    });
+    if (typeof Chart !== 'undefined') {
+      if (chartGauge) chartGauge.destroy();
+      chartGauge = new Chart(document.getElementById('chartGauge'), {
+        type: 'doughnut',
+        data: { datasets: [{ data: [gaugeValue, Math.max(0, 100 - gaugeValue)], backgroundColor: [gaugeColor, '#EEF2EE'], borderWidth: 0 }] },
+        options: { cutout: '78%', circumference: 360, plugins: { legend: { display: false }, tooltip: { enabled: false } } }
+      });
+    }
 
     // ----- tabel per instalasi -----
     const tbody = document.getElementById('tableInstalasi');
