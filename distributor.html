@@ -25,7 +25,7 @@
   .gate-msg.error { color: var(--coral); }
   .gate-msg.loading { color: var(--text-muted); }
 
-  header.topbar { background: var(--green-deep); color: #fff; padding: 18px 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+  header.topbar { position: sticky; top: 0; z-index: 100; background: var(--green-deep); color: #fff; padding: 18px 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
   .brand { display: flex; align-items: center; gap: 10px; }
   .brand .mark { width: 34px; height: 34px; border-radius: 9px; background: var(--green-bright); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; color: var(--green-deep); }
   .brand .label { font-size: 12px; color: rgba(255,255,255,0.65); line-height: 1.2; }
@@ -35,7 +35,21 @@
   a.back { color: rgba(255,255,255,0.85); text-decoration: none; font-size: 13px; }
   a.back:hover { color: #fff; }
 
-  main { max-width: 1000px; margin: 0 auto; padding: 24px 20px 60px; }
+  main { max-width: 1180px; margin: 0 auto; padding: 24px 20px 60px; }
+
+  .layout-split { display: grid; grid-template-columns: 1fr 2fr; gap: 16px; align-items: start; }
+  .left-col { display: flex; flex-direction: column; gap: 16px; position: sticky; top: 90px; }
+  .side-panel { padding: 18px 20px; }
+  .side-title { font-size: 14px; margin: 0 0 12px; }
+  .field { margin-bottom: 12px; }
+  .field:last-child { margin-bottom: 0; }
+  .field label { display: block; font-size: 11.5px; font-weight: 600; color: var(--text-muted); margin-bottom: 5px; }
+  .field select, .field input { width: 100%; padding: 9px 10px; border: 1px solid var(--border); border-radius: 8px; font-size: 13px; }
+
+  @media (max-width: 860px) {
+    .layout-split { grid-template-columns: 1fr; }
+    .left-col { position: static; }
+  }
 
   .stat-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 18px; }
   .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 16px 18px; }
@@ -116,14 +130,30 @@
       </div>
     </div>
 
-    <div class="toolbar">
-      <input type="text" id="searchBox" placeholder="Cari nama distributor...">
-      <select id="bulanSelect"></select>
-      <select id="tahunSelect"></select>
-    </div>
+    <div class="layout-split">
+      <aside class="left-col">
+        <div class="panel side-panel">
+          <h2 class="side-title">Filter &amp; Periode</h2>
+          <div class="field">
+            <label>Cari nama distributor</label>
+            <input type="text" id="searchBox" placeholder="Cari nama distributor...">
+          </div>
+          <div class="field">
+            <label>Bulan</label>
+            <select id="bulanSelect"></select>
+          </div>
+          <div class="field">
+            <label>Tahun</label>
+            <select id="tahunSelect"></select>
+          </div>
+        </div>
+      </aside>
 
-    <div id="distList">
-      <div class="empty-state">Memuat data...</div>
+      <section class="right-col">
+        <div id="distList">
+          <div class="empty-state">Memuat data...</div>
+        </div>
+      </section>
     </div>
   </main>
 </div>
