@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Gudang Farmasi — RKO RSAMP</title>
+<title>User — RKO RSAMP</title>
 <style>
   :root {
     --green-deep: #0F3D2E; --green-mid: #16A34A; --green-bright: #3FCF6A; --green-soft: #E7F5EC;
@@ -41,45 +41,46 @@
   .left-col { display: flex; flex-direction: column; gap: 16px; position: sticky; top: 90px; }
   .side-panel { padding: 18px 20px; }
   .side-title { font-size: 14px; margin: 0 0 12px; }
+  .side-sub { font-size: 11.5px; color: var(--text-muted); margin: -8px 0 10px; }
   .field { margin-bottom: 12px; }
   .field:last-child { margin-bottom: 0; }
   .field label { display: block; font-size: 11.5px; font-weight: 600; color: var(--text-muted); margin-bottom: 5px; }
   .field select, .field input { width: 100%; padding: 9px 10px; border: 1px solid var(--border); border-radius: 8px; font-size: 13px; }
+  .field-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+  .unit-display { font-size: 13px; font-weight: 600; color: var(--green-deep); padding: 8px 0 0; }
+  .periode-display { font-size: 12px; color: var(--text-muted); margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
 
   @media (max-width: 860px) {
     .layout-split { grid-template-columns: 1fr; }
     .left-col { position: static; }
   }
 
-  .stat-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 18px; }
-  .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 16px 18px; }
-  .stat-card .num { font-size: 20px; font-weight: 700; }
-  .stat-card .lbl { font-size: 12px; color: var(--text-muted); margin-top: 3px; }
-
   .toolbar { display: flex; gap: 12px; align-items: center; margin-bottom: 16px; flex-wrap: wrap; }
   .toolbar input[type="text"] { flex: 1; min-width: 220px; padding: 10px 14px; border: 1px solid var(--border); border-radius: 9px; font-size: 13.5px; }
   .toolbar select { padding: 10px 12px; border: 1px solid var(--border); border-radius: 9px; font-size: 13.5px; }
 
-  .panel { background: var(--card); border: 1px solid var(--border); border-radius: 14px; overflow-x: auto; }
-  table { width: 100%; border-collapse: collapse; font-size: 12.5px; min-width: 1080px; }
-  th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; white-space: nowrap; }
-  th { color: var(--text-muted); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.3px; background: #FAFBFA; }
-  td.num { text-align: right; }
+  .info-bar {
+    background: var(--green-soft); border: 1px solid #cdeed9; border-radius: 12px;
+    padding: 12px 16px; font-size: 13px; color: var(--green-deep); margin-bottom: 16px;
+    display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px;
+  }
 
-  input.qty { width: 80px; padding: 6px 8px; border: 1px solid var(--border); border-radius: 7px; font-size: 12.5px; }
+  .panel { background: var(--card); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { text-align: left; padding: 11px 14px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  th { color: var(--text-muted); font-weight: 600; font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.3px; background: #FAFBFA; }
+
+  input.qty {
+    width: 90px; padding: 7px 9px; border: 1px solid var(--border); border-radius: 7px; font-size: 13px;
+  }
   input.qty:focus { border-color: var(--green-mid); outline: none; }
-  select.dist { padding: 6px 8px; border: 1px solid var(--border); border-radius: 7px; font-size: 12.5px; max-width: 160px; }
 
-  .badge { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px; }
-  .badge.cukup { background: var(--green-soft); color: var(--green-mid); }
-  .badge.kurang { background: #FBEAE7; color: var(--coral); }
-
-  .btn { padding: 6px 12px; border: none; border-radius: 7px; font-weight: 600; font-size: 12px; cursor: pointer; }
+  .btn { padding: 7px 14px; border: none; border-radius: 7px; font-weight: 600; font-size: 12.5px; cursor: pointer; }
   .btn-primary { background: var(--green-mid); color: #fff; }
   .btn-primary:hover { background: #128a3e; }
   .btn-primary:disabled { background: #A9C9B5; cursor: default; }
 
-  .status-tag { font-size: 10.5px; font-weight: 600; padding: 2px 7px; border-radius: 999px; }
+  .status-tag { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 999px; }
   .status-tag.saved { background: var(--green-soft); color: var(--green-mid); }
   .status-tag.unsaved { background: #F1F1EE; color: var(--text-muted); }
 
@@ -95,8 +96,8 @@
 <div id="gate">
   <div class="gate-box">
     <div class="mark">RS</div>
-    <h1>Masuk ke Gudang Farmasi</h1>
-    <p>Khusus petugas gudang farmasi, admin, dan super admin.</p>
+    <h1>Masuk ke halaman User</h1>
+    <p>Masukkan email yang terdaftar untuk input kebutuhan unit Anda.</p>
     <input type="email" id="gateEmail" placeholder="nama@rsamp.go.id" autocomplete="email">
     <button onclick="login()">Masuk</button>
     <div class="gate-msg" id="gateMsg"></div>
@@ -109,7 +110,7 @@
       <div class="mark">RS</div>
       <div>
         <div class="title">RKO RSAMP</div>
-        <div class="label">Gudang Farmasi — rencana belanja obat &amp; BMHP</div>
+        <div class="label">User — input kebutuhan unit</div>
       </div>
     </div>
     <div class="topbar-right">
@@ -119,65 +120,67 @@
   </header>
 
   <main>
-    <div class="stat-row">
-      <div class="stat-card">
-        <div class="num" id="statTotalKurang">-</div>
-        <div class="lbl">Item yang kurang stok bulan ini</div>
-      </div>
-      <div class="stat-card">
-        <div class="num" id="statTotalRencana">Rp -</div>
-        <div class="lbl">Total rencana belanja periode ini</div>
-      </div>
-      <div class="stat-card">
-        <div class="num" id="statTotalItem">-</div>
-        <div class="lbl">Total item obat &amp; BMHP aktif</div>
-      </div>
-    </div>
-
     <div class="layout-split">
       <aside class="left-col">
         <div class="panel side-panel">
-          <h2 class="side-title">Filter &amp; Periode</h2>
+          <h2 class="side-title">Unit &amp; Periode</h2>
           <div class="field">
-            <label>Cari nama barang</label>
-            <input type="text" id="searchBox" placeholder="Cari nama barang...">
+            <label>Ruangan</label>
+            <select id="ruanganSelect" style="display:none;"></select>
+            <div id="unitLabel" class="unit-display">Unit: -</div>
           </div>
-          <div class="field">
-            <label>Tampilkan</label>
-            <select id="filterKurang">
-              <option value="">Semua item</option>
-              <option value="kurang">Kurang stok saja</option>
-            </select>
+          <div class="field-row-2">
+            <div class="field" style="margin-bottom:0;"><label>Bulan</label><select id="bulanSelect"></select></div>
+            <div class="field" style="margin-bottom:0;"><label>Tahun</label><select id="tahunSelect"></select></div>
           </div>
-          <div class="field">
-            <label>Bulan</label>
-            <select id="bulanSelect"></select>
-          </div>
-          <div class="field">
-            <label>Tahun</label>
-            <select id="tahunSelect"></select>
-          </div>
+          <div id="periodeLabel" class="periode-display">Periode: -</div>
+        </div>
+
+        <div class="panel side-panel">
+          <h2 class="side-title">Jumlah kunjungan pasien</h2>
+          <p class="side-sub">Diisi 1 angka per unit, dipakai untuk hitung HPP per kunjungan di Laporan</p>
+          <input type="number" id="kunjunganInput" class="qty" placeholder="0">
+          <button class="btn btn-primary" style="width:100%; margin-top:10px;" onclick="saveKunjungan()">Simpan</button>
+          <div style="margin-top:10px;"><span class="status-tag unsaved" id="kunjunganStatus">Belum diisi</span></div>
         </div>
       </aside>
 
       <section class="right-col">
+        <div class="toolbar">
+          <input type="text" id="searchBox" placeholder="Cari nama barang...">
+          <select id="filterGolongan">
+            <option value="">Semua golongan</option>
+            <option value="OBAT">Obat</option>
+            <option value="BMHP">BMHP</option>
+            <option value="BHP">BHP</option>
+            <option value="B3">B3</option>
+            <option value="NUTRISI ENTERAL">Nutrisi Enteral</option>
+            <option value="PROGRAM">Program</option>
+            <option value="PROGRAM TB">Program TB</option>
+            <option value="PROGRAM HIV">Program HIV</option>
+            <option value="PROGRAM MALARIA">Program Malaria</option>
+            <option value="PROGRAM RABIES">Program Rabies</option>
+            <option value="PROGRAM BKKBN">Program BKKBN</option>
+            <option value="PROGRAM COVID">Program Covid</option>
+            <option value="PROGRAM STUNTING">Program Stunting</option>
+            <option value="PROGRAM IMUNISASI">Program Imunisasi</option>
+          </select>
+        </div>
+
         <div class="panel">
           <table>
             <thead>
               <tr>
                 <th>Nama barang</th>
-                <th class="num">Kebutuhan unit</th>
-                <th>Stok gudang</th>
-                <th class="num">Kurang</th>
-                <th>Distributor</th>
-                <th>Qty rencana beli</th>
-                <th>Rencana (Rp)</th>
+                <th>Satuan</th>
+                <th>Sisa stok</th>
+                <th>Kebutuhan</th>
                 <th>Status</th>
                 <th></th>
               </tr>
             </thead>
             <tbody id="tableBody">
-              <tr><td colspan="9" class="empty-state">Memuat data...</td></tr>
+              <tr><td colspan="6" class="empty-state">Memuat data...</td></tr>
             </tbody>
           </table>
           <div class="pager">
@@ -197,49 +200,89 @@
   const API_URL = "https://script.google.com/macros/s/AKfycbxDRPAfelh1J9dSSgcZaWvaQy-FgKh-fxd01LL_2pU2Bj0LhsPsqyOmVTlhuQKdYLsb/exec";
 
   let currentUser = null;
+  let ruanganList = [];
+  let activeRuanganId = null;
   let allBarang = [];
-  let distributorList = [];
-  let kebutuhanTotalPerBarang = {}; // barang_id -> total kebutuhan semua unit
-  let stokGudangMap = {};           // barang_id -> stok gudang
-  let rencanaMap = {};              // barang_id -> {distributor_id, qty, rp, saved}
+  let existingKebutuhan = {}; // key: barang_id -> {sisa, kebutuhan, saved:true}
+  let currentKunjungan = null; // {id, jumlah} untuk periode+ruangan aktif
   let filteredBarang = [];
   let page = 1;
   const PAGE_SIZE = 25;
 
+  // ---------- LOGIN ----------
   function login() {
     const email = document.getElementById('gateEmail').value.trim();
     const msg = document.getElementById('gateMsg');
     if (!email) { msg.textContent = 'Isi email dulu.'; msg.className = 'gate-msg error'; return; }
-    msg.textContent = 'Memeriksa akses...'; msg.className = 'gate-msg loading';
+
+    msg.textContent = 'Memeriksa akses...';
+    msg.className = 'gate-msg loading';
 
     fetch(API_URL + '?action=whoAmI&email=' + encodeURIComponent(email))
       .then(res => res.json())
       .then(res => {
-        if (!res.success || !res.data) { msg.textContent = 'Email tidak terdaftar atau tidak aktif.'; msg.className = 'gate-msg error'; return; }
-        const allowed = ['GUDANG_FARMASI', 'ADMIN', 'SUPER_ADMIN'];
-        if (allowed.indexOf(res.data.ROLE) === -1) { msg.textContent = 'Akun Anda (' + res.data.ROLE + ') tidak punya akses ke halaman ini.'; msg.className = 'gate-msg error'; return; }
+        if (!res.success || !res.data) {
+          msg.textContent = 'Email tidak terdaftar atau tidak aktif.';
+          msg.className = 'gate-msg error';
+          return;
+        }
+        const allowedRoles = ['USER_RUANGAN', 'ADMIN', 'SUPER_ADMIN'];
+        if (allowedRoles.indexOf(res.data.ROLE) === -1) {
+          msg.textContent = 'Akun Anda (' + res.data.ROLE + ') tidak punya akses ke halaman ini.';
+          msg.className = 'gate-msg error';
+          return;
+        }
         currentUser = res.data;
         document.getElementById('gate').style.display = 'none';
         document.getElementById('appContent').style.display = 'block';
         document.getElementById('whoLabel').textContent = currentUser.NAMA + ' · ' + currentUser.ROLE;
         initData();
       })
-      .catch(() => { msg.textContent = 'Gagal menghubungi server. Cek koneksi.'; msg.className = 'gate-msg error'; });
+      .catch(() => {
+        msg.textContent = 'Gagal menghubungi server. Cek koneksi.';
+        msg.className = 'gate-msg error';
+      });
   }
 
+  // ---------- INIT ----------
   function initData() {
     const now = new Date();
     fillPeriodOptions(now.getMonth() + 1, now.getFullYear());
 
-    fetch(API_URL + '?action=getMasterDistributor').then(r => r.json()).then(res => {
-      distributorList = res.success ? res.data : [];
-      loadAllData();
+    fetch(API_URL + '?action=getMasterRuangan').then(r => r.json()).then(res => {
+      ruanganList = res.success ? res.data : [];
+
+      if (currentUser.ROLE === 'USER_RUANGAN') {
+        activeRuanganId = currentUser.RUANGAN_ID;
+        const r = ruanganList.find(x => x.ID === activeRuanganId);
+        document.getElementById('unitLabel').textContent = 'Unit: ' + (r ? r.NAMA_RUANGAN : '-');
+      } else {
+        // Admin/Super admin bisa pilih ruangan mana saja
+        const sel = document.getElementById('ruanganSelect');
+        sel.style.display = 'block';
+        ruanganList.forEach(r => {
+          const opt = document.createElement('option');
+          opt.value = r.ID; opt.textContent = r.NAMA_RUANGAN;
+          sel.appendChild(opt);
+        });
+        activeRuanganId = ruanganList.length ? ruanganList[0].ID : null;
+        sel.addEventListener('change', () => {
+          activeRuanganId = Number(sel.value);
+          const r = ruanganList.find(x => x.ID === activeRuanganId);
+          document.getElementById('unitLabel').textContent = 'Unit: ' + (r ? r.NAMA_RUANGAN : '-');
+          loadBarangDanKebutuhan();
+        });
+        const r0 = ruanganList[0];
+        document.getElementById('unitLabel').textContent = 'Unit: ' + (r0 ? r0.NAMA_RUANGAN : '-');
+      }
+
+      loadBarangDanKebutuhan();
     });
 
-    document.getElementById('bulanSelect').addEventListener('change', loadAllData);
-    document.getElementById('tahunSelect').addEventListener('change', loadAllData);
+    document.getElementById('bulanSelect').addEventListener('change', () => { updatePeriodeLabel(); loadBarangDanKebutuhan(); });
+    document.getElementById('tahunSelect').addEventListener('change', () => { updatePeriodeLabel(); loadBarangDanKebutuhan(); });
     document.getElementById('searchBox').addEventListener('input', () => { page = 1; applyFilter(); });
-    document.getElementById('filterKurang').addEventListener('change', () => { page = 1; applyFilter(); });
+    document.getElementById('filterGolongan').addEventListener('change', () => { page = 1; applyFilter(); });
   }
 
   function fillPeriodOptions(curBulan, curTahun) {
@@ -251,6 +294,7 @@
       if (i + 1 === curBulan) opt.selected = true;
       bulanSel.appendChild(opt);
     });
+
     const tahunSel = document.getElementById('tahunSelect');
     for (let y = curTahun - 1; y <= curTahun + 1; y++) {
       const opt = document.createElement('option');
@@ -258,67 +302,93 @@
       if (y === curTahun) opt.selected = true;
       tahunSel.appendChild(opt);
     }
+    updatePeriodeLabel();
   }
 
-  function loadAllData() {
+  function updatePeriodeLabel() {
+    const b = document.getElementById('bulanSelect');
+    const t = document.getElementById('tahunSelect').value;
+    document.getElementById('periodeLabel').textContent =
+      'Periode: ' + b.options[b.selectedIndex].textContent + ' ' + t;
+  }
+
+  function loadBarangDanKebutuhan() {
     const bulan = document.getElementById('bulanSelect').value;
     const tahun = document.getElementById('tahunSelect').value;
-    document.getElementById('tableBody').innerHTML = '<tr><td colspan="9" class="empty-state">Memuat data...</td></tr>';
+    document.getElementById('tableBody').innerHTML = '<tr><td colspan="6" class="empty-state">Memuat data...</td></tr>';
 
     Promise.all([
       fetch(API_URL + '?action=getMasterBarang').then(r => r.json()),
-      fetch(API_URL + `?action=getKebutuhan&bulan=${bulan}&tahun=${tahun}`).then(r => r.json()),
-      fetch(API_URL + `?action=getStokOpname&bulan=${bulan}&tahun=${tahun}`).then(r => r.json()),
-      fetch(API_URL + `?action=getRencanaBelanja&bulan=${bulan}&tahun=${tahun}`).then(r => r.json())
-    ]).then(([barangRes, kebutuhanRes, stokRes, rencanaRes]) => {
+      fetch(API_URL + `?action=getKebutuhan&ruangan_id=${activeRuanganId}&bulan=${bulan}&tahun=${tahun}`).then(r => r.json()),
+      fetch(API_URL + `?action=getKunjungan&ruangan_id=${activeRuanganId}&bulan=${bulan}&tahun=${tahun}`).then(r => r.json())
+    ]).then(([barangRes, kebutuhanRes, kunjunganRes]) => {
       allBarang = (barangRes.success ? barangRes.data : []).filter(b => b.STATUS_AKTIF === true || b.STATUS_AKTIF === 'TRUE');
 
-      kebutuhanTotalPerBarang = {};
+      existingKebutuhan = {};
       (kebutuhanRes.success ? kebutuhanRes.data : []).forEach(k => {
-        kebutuhanTotalPerBarang[k.BARANG_ID] = (kebutuhanTotalPerBarang[k.BARANG_ID] || 0) + (Number(k.KEBUTUHAN) || 0);
-      });
-
-      stokGudangMap = {};
-      (stokRes.success ? stokRes.data : []).forEach(s => { stokGudangMap[s.BARANG_ID] = Number(s.STOK_GUDANG) || 0; });
-
-      rencanaMap = {};
-      (rencanaRes.success ? rencanaRes.data : []).forEach(r => {
-        rencanaMap[r.BARANG_ID] = {
-          distributor_id: r.DISTRIBUTOR_ID, qty: r.RENCANA_QTY_SATUAN_BELI, rp: r.RENCANA_RP, saved: true
+        existingKebutuhan[k.BARANG_ID] = {
+          sisa: k.SISA_STOK_RUANGAN, kebutuhan: k.KEBUTUHAN, saved: true
         };
       });
 
-      document.getElementById('statTotalItem').textContent = allBarang.length.toLocaleString('id-ID');
+      const kunjunganData = kunjunganRes.success ? kunjunganRes.data : [];
+      if (kunjunganData.length > 0) {
+        currentKunjungan = { id: kunjunganData[0].ID, jumlah: kunjunganData[0].JUMLAH_KUNJUNGAN };
+        document.getElementById('kunjunganInput').value = currentKunjungan.jumlah;
+        document.getElementById('kunjunganStatus').textContent = 'Tersimpan';
+        document.getElementById('kunjunganStatus').className = 'status-tag saved';
+      } else {
+        currentKunjungan = null;
+        document.getElementById('kunjunganInput').value = '';
+        document.getElementById('kunjunganStatus').textContent = 'Belum diisi';
+        document.getElementById('kunjunganStatus').className = 'status-tag unsaved';
+      }
+
       applyFilter();
-      updateSummary();
     }).catch(() => {
-      document.getElementById('tableBody').innerHTML = '<tr><td colspan="9" class="empty-state">Gagal memuat data dari server.</td></tr>';
+      document.getElementById('tableBody').innerHTML = '<tr><td colspan="6" class="empty-state">Gagal memuat data dari server.</td></tr>';
     });
   }
 
-  function updateSummary() {
-    let totalKurang = 0, totalRp = 0;
-    allBarang.forEach(b => {
-      const kebutuhan = kebutuhanTotalPerBarang[b.ID] || 0;
-      const stok = stokGudangMap[b.ID] || 0;
-      if (kebutuhan - stok > 0) totalKurang++;
+  function saveKunjungan() {
+    const jumlah = Number(document.getElementById('kunjunganInput').value) || 0;
+    const bulan = document.getElementById('bulanSelect').value;
+    const tahun = document.getElementById('tahunSelect').value;
+    const statusTag = document.getElementById('kunjunganStatus');
+
+    statusTag.textContent = 'Menyimpan...'; statusTag.className = 'status-tag unsaved';
+
+    fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({
+        action: 'saveKunjungan',
+        email: currentUser.EMAIL,
+        ruangan_id: activeRuanganId,
+        bulan, tahun,
+        jumlah_kunjungan: jumlah
+      })
+    }).then(r => r.json()).then(res => {
+      if (res.success) {
+        statusTag.textContent = 'Tersimpan'; statusTag.className = 'status-tag saved';
+      } else {
+        statusTag.textContent = 'Gagal'; statusTag.className = 'status-tag unsaved';
+        alert(res.message);
+      }
+    }).catch(() => {
+      statusTag.textContent = 'Gagal'; statusTag.className = 'status-tag unsaved';
+      alert('Gagal menyimpan. Cek koneksi.');
     });
-    Object.values(rencanaMap).forEach(r => { totalRp += Number(r.rp) || 0; });
-    document.getElementById('statTotalKurang').textContent = totalKurang.toLocaleString('id-ID');
-    document.getElementById('statTotalRencana').textContent = 'Rp ' + totalRp.toLocaleString('id-ID');
   }
 
+  // ---------- FILTER & TABEL ----------
   function applyFilter() {
     const q = document.getElementById('searchBox').value.toLowerCase();
-    const onlyKurang = document.getElementById('filterKurang').value === 'kurang';
+    const golongan = document.getElementById('filterGolongan').value;
     filteredBarang = allBarang.filter(b => {
       const matchQ = !q || String(b.NAMA_BARANG).toLowerCase().includes(q);
-      if (!matchQ) return false;
-      if (onlyKurang) {
-        const kurang = (kebutuhanTotalPerBarang[b.ID] || 0) - (stokGudangMap[b.ID] || 0);
-        return kurang > 0;
-      }
-      return true;
+      const matchG = !golongan || b.GOLONGAN === golongan;
+      return matchQ && matchG;
     });
     renderTable();
   }
@@ -329,27 +399,17 @@
     const pageItems = filteredBarang.slice(start, start + PAGE_SIZE);
 
     if (pageItems.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="9" class="empty-state">Tidak ada data yang cocok.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="6" class="empty-state">Tidak ada data yang cocok.</td></tr>';
     } else {
       tbody.innerHTML = pageItems.map(b => {
-        const kebutuhan = kebutuhanTotalPerBarang[b.ID] || 0;
-        const stok = stokGudangMap[b.ID] !== undefined ? stokGudangMap[b.ID] : '';
-        const kurang = Math.max(0, kebutuhan - (Number(stok) || 0));
-        const rencana = rencanaMap[b.ID] || { distributor_id: b.DISTRIBUTOR_ID || '', qty: '', rp: '', saved: false };
-        const distOptions = distributorList.map(d =>
-          `<option value="${d.ID}" ${String(d.ID) === String(rencana.distributor_id) ? 'selected' : ''}>${escapeHtml(d.NAMA_DISTRIBUTOR)}</option>`
-        ).join('');
-
+        const existing = existingKebutuhan[b.ID] || { sisa: '', kebutuhan: '', saved: false };
         return `
-          <tr data-id="${b.ID}" data-hpp="${b.HPP_BELI || 0}">
+          <tr data-id="${b.ID}">
             <td>${escapeHtml(b.NAMA_BARANG)}</td>
-            <td class="num">${kebutuhan.toLocaleString('id-ID')}</td>
-            <td><input type="number" class="qty" data-field="stok" value="${stok}" onchange="recalc(${b.ID})"></td>
-            <td class="num"><span class="badge ${kurang > 0 ? 'kurang' : 'cukup'}">${kurang.toLocaleString('id-ID')}</span></td>
-            <td><select class="dist" data-field="dist">${distOptions || '<option value="">-</option>'}</select></td>
-            <td><input type="number" class="qty" data-field="qty" value="${rencana.qty}"></td>
-            <td><input type="number" class="qty" data-field="rp" value="${rencana.rp}" style="width:110px;"></td>
-            <td><span class="status-tag ${rencana.saved ? 'saved' : 'unsaved'}" id="status-${b.ID}">${rencana.saved ? 'Tersimpan' : 'Belum diisi'}</span></td>
+            <td>${escapeHtml(b.SATUAN_JUAL || '-')}</td>
+            <td><input type="number" class="qty" data-field="sisa" value="${existing.sisa}" onchange="markUnsaved(${b.ID})"></td>
+            <td><input type="number" class="qty" data-field="kebutuhan" value="${existing.kebutuhan}" onchange="markUnsaved(${b.ID})"></td>
+            <td><span class="status-tag ${existing.saved ? 'saved' : 'unsaved'}" id="status-${b.ID}">${existing.saved ? 'Tersimpan' : 'Belum diisi'}</span></td>
             <td><button class="btn btn-primary" onclick="saveRow(${b.ID})">Simpan</button></td>
           </tr>`;
       }).join('');
@@ -363,67 +423,46 @@
 
   function changePage(delta) { page += delta; renderTable(); }
 
-  // saat stok gudang diubah, sarankan qty & rp otomatis (masih bisa ditimpa manual)
-  function recalc(barangId) {
-    const row = document.querySelector(`tr[data-id="${barangId}"]`);
-    const stok = Number(row.querySelector('[data-field="stok"]').value) || 0;
-    const kebutuhan = kebutuhanTotalPerBarang[barangId] || 0;
-    const kurang = Math.max(0, kebutuhan - stok);
-    const hpp = Number(row.dataset.hpp) || 0;
-
-    row.querySelector('.badge').textContent = kurang.toLocaleString('id-ID');
-    row.querySelector('.badge').className = 'badge ' + (kurang > 0 ? 'kurang' : 'cukup');
-
-    const qtyInput = row.querySelector('[data-field="qty"]');
-    const rpInput = row.querySelector('[data-field="rp"]');
-    if (!qtyInput.value) qtyInput.value = kurang;
-    if (!rpInput.value) rpInput.value = kurang * hpp;
-
-    markUnsaved(barangId);
-  }
-
   function markUnsaved(barangId) {
     const tag = document.getElementById('status-' + barangId);
     if (tag) { tag.textContent = 'Belum disimpan'; tag.className = 'status-tag unsaved'; }
   }
 
+  // ---------- SIMPAN ----------
   function saveRow(barangId) {
     const row = document.querySelector(`tr[data-id="${barangId}"]`);
-    const stok = Number(row.querySelector('[data-field="stok"]').value) || 0;
-    const distId = row.querySelector('[data-field="dist"]').value;
-    const qty = Number(row.querySelector('[data-field="qty"]').value) || 0;
-    const rp = Number(row.querySelector('[data-field="rp"]').value) || 0;
-    const bulan = document.getElementById('bulanSelect').value;
-    const tahun = document.getElementById('tahunSelect').value;
+    const sisa = row.querySelector('[data-field="sisa"]').value;
+    const kebutuhan = row.querySelector('[data-field="kebutuhan"]').value;
     const btn = row.querySelector('button');
     const tag = document.getElementById('status-' + barangId);
 
-    btn.disabled = true; btn.textContent = '...';
+    btn.disabled = true; btn.textContent = 'Menyimpan...';
 
-    Promise.all([
-      postToApi({ action: 'saveStokOpname', email: currentUser.EMAIL, barang_id: barangId, bulan, tahun, stok_gudang: stok }),
-      postToApi({ action: 'saveRencanaBelanja', email: currentUser.EMAIL, barang_id: barangId, distributor_id: distId, bulan, tahun, rencana_qty: qty, rencana_rp: rp })
-    ]).then(([resStok, resRencana]) => {
+    fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({
+        action: 'saveKebutuhan',
+        email: currentUser.EMAIL,
+        barang_id: barangId,
+        ruangan_id: activeRuanganId,
+        bulan: document.getElementById('bulanSelect').value,
+        tahun: document.getElementById('tahunSelect').value,
+        sisa_stok_ruangan: Number(sisa) || 0,
+        kebutuhan: Number(kebutuhan) || 0
+      })
+    }).then(r => r.json()).then(res => {
       btn.disabled = false; btn.textContent = 'Simpan';
-      if (!resStok.success) { alert(resStok.message); return; }
-      if (!resRencana.success) { alert(resRencana.message); return; }
-
-      tag.textContent = 'Tersimpan'; tag.className = 'status-tag saved';
-      stokGudangMap[barangId] = stok;
-      rencanaMap[barangId] = { distributor_id: distId, qty, rp, saved: true };
-      updateSummary();
+      if (res.success) {
+        tag.textContent = 'Tersimpan'; tag.className = 'status-tag saved';
+        existingKebutuhan[barangId] = { sisa, kebutuhan, saved: true };
+      } else {
+        alert(res.message);
+      }
     }).catch(() => {
       btn.disabled = false; btn.textContent = 'Simpan';
       alert('Gagal menyimpan. Cek koneksi.');
     });
-  }
-
-  function postToApi(payload) {
-    return fetch(API_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify(payload)
-    }).then(res => res.json());
   }
 
   function escapeHtml(str) {
