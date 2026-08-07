@@ -38,7 +38,7 @@
   main { max-width: 100%; margin: 0; padding: 24px 20px 60px; }
 
   .layout-split { display: grid; grid-template-columns: 1fr 2fr; gap: 16px; align-items: start; }
-  .left-col { display: flex; flex-direction: column; gap: 16px; position: sticky; top: 90px; }
+  .left-col { display: flex; flex-direction: column; gap: 16px; position: sticky; top: 185px; z-index: 80; align-self: start; }
   .side-panel { padding: 18px 20px; }
   .side-title { font-size: 14px; margin: 0 0 12px; }
   .field { margin-bottom: 12px; }
@@ -235,7 +235,7 @@
   let rencanaMap = {};              // barang_id -> {distributor_id, qty, rp, saved}
   let filteredBarang = [];
   let page = 1;
-  const PAGE_SIZE = 25;
+  const PAGE_SIZE = 15;
 
   function login() {
     const email = document.getElementById('gateEmail').value.trim();
