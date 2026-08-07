@@ -89,6 +89,22 @@
   .pager button:disabled { opacity: 0.4; cursor: default; }
 
   .empty-state { text-align: center; padding: 40px 20px; color: var(--text-muted); font-size: 13.5px; }
+
+  /* ===== MODAL TAMBAH BARANG ===== */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0; background: rgba(15,61,46,0.45);
+    align-items: center; justify-content: center; z-index: 40; padding: 20px;
+  }
+  .modal-overlay.show { display: flex; }
+  .modal-box {
+    background: #fff; border-radius: 16px; width: 100%; max-width: 480px;
+    max-height: 88vh; overflow-y: auto; padding: 24px;
+  }
+  .search-result-item {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 4px; border-bottom: 1px solid var(--border); font-size: 13px; gap: 10px;
+  }
+  .search-result-item:last-child { border-bottom: none; }
 </style>
 </head>
 <body>
@@ -165,6 +181,7 @@
             <option value="PROGRAM STUNTING">Program Stunting</option>
             <option value="PROGRAM IMUNISASI">Program Imunisasi</option>
           </select>
+          <button class="btn btn-primary" onclick="openTambahBarangModal()">+ Tambah Barang</button>
         </div>
 
         <div class="panel">
@@ -196,13 +213,27 @@
   </main>
 </div>
 
+<!-- ====== MODAL TAMBAH BARANG KE DAFTAR RUANGAN ====== -->
+<div id="modalTambahBarang" class="modal-overlay">
+  <div class="modal-box">
+    <h2 class="side-title">Tambah barang ke daftar ruangan</h2>
+    <p class="side-sub" style="margin:-6px 0 12px; font-size:12px; color:var(--text-muted);">Cari dari seluruh master barang &amp; BMHP. Barang yang dipilih akan otomatis muncul tiap bulan mulai sekarang.</p>
+    <input type="text" id="tambahBarangSearch" placeholder="Ketik nama barang..." oninput="searchTambahBarang()" style="width:100%; padding:10px 12px; border:1px solid var(--border); border-radius:8px; font-size:13.5px; margin-bottom:14px;">
+    <div id="tambahBarangResults" style="max-height:360px; overflow-y:auto;"></div>
+    <div style="text-align:right; margin-top:16px;">
+      <button class="btn" style="background:#F1F1EE; color:var(--text-dark);" onclick="closeTambahBarangModal()">Tutup</button>
+    </div>
+  </div>
+</div>
+
 <script>
   const API_URL = "https://script.google.com/macros/s/AKfycbxDRPAfelh1J9dSSgcZaWvaQy-FgKh-fxd01LL_2pU2Bj0LhsPsqyOmVTlhuQKdYLsb/exec";
 
   let currentUser = null;
   let ruanganList = [];
   let activeRuanganId = null;
-  let allBarang = [];
+  let allBarang = [];       // barang yang terdaftar aktif di ruangan ini (yang tampil di tabel utama)
+  let fullMasterBarang = []; // seluruh master barang (dipakai untuk pencarian saat "+ Tambah Barang")
   let existingKebutuhan = {}; // key: barang_id -> {sisa, kebutuhan, saved:true}
   let currentKunjungan = null; // {id, jumlah} untuk periode+ruangan aktif
   let filteredBarang = [];
@@ -319,10 +350,21 @@
 
     Promise.all([
       fetch(API_URL + '?action=getMasterBarang').then(r => r.json()),
+      fetch(API_URL + `?action=getBarangRuangan&ruangan_id=${activeRuanganId}`).then(r => r.json()),
       fetch(API_URL + `?action=getKebutuhan&ruangan_id=${activeRuanganId}&bulan=${bulan}&tahun=${tahun}`).then(r => r.json()),
       fetch(API_URL + `?action=getKunjungan&ruangan_id=${activeRuanganId}&bulan=${bulan}&tahun=${tahun}`).then(r => r.json())
-    ]).then(([barangRes, kebutuhanRes, kunjunganRes]) => {
-      allBarang = (barangRes.success ? barangRes.data : []).filter(b => b.STATUS_AKTIF === true || b.STATUS_AKTIF === 'TRUE');
+    ]).then(([barangRes, barangRuanganRes, kebutuhanRes, kunjunganRes]) => {
+      fullMasterBarang = (barangRes.success ? barangRes.data : []).filter(b => b.STATUS_AKTIF === true || b.STATUS_AKTIF === 'TRUE');
+
+      // hanya barang yang terdaftar AKTIF untuk ruangan ini yang tampil di daftar utama
+      const aktifIds = new Set(
+        (barangRuanganRes.success ? barangRuanganRes.data : [])
+          .filter(br => br.STATUS_AKTIF === true || br.STATUS_AKTIF === 'TRUE')
+          .map(br => br.BARANG_ID)
+      );
+      const fullMasterMap = {};
+      fullMasterBarang.forEach(b => { fullMasterMap[b.ID] = b; });
+      allBarang = Array.from(aktifIds).map(id => fullMasterMap[id]).filter(Boolean);
 
       existingKebutuhan = {};
       (kebutuhanRes.success ? kebutuhanRes.data : []).forEach(k => {
@@ -398,8 +440,10 @@
     const start = (page - 1) * PAGE_SIZE;
     const pageItems = filteredBarang.slice(start, start + PAGE_SIZE);
 
-    if (pageItems.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="6" class="empty-state">Tidak ada data yang cocok.</td></tr>';
+    if (pageItems.length === 0 && allBarang.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" class="empty-state">Ruangan ini belum punya barang terdaftar. Klik "+ Tambah Barang" di atas untuk mulai.</td></tr>';
+    } else if (pageItems.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" class="empty-state">Tidak ada barang yang cocok dengan pencarian/filter.</td></tr>';
     } else {
       tbody.innerHTML = pageItems.map(b => {
         const existing = existingKebutuhan[b.ID] || { sisa: '', kebutuhan: '', saved: false };
@@ -410,7 +454,12 @@
             <td><input type="number" class="qty" data-field="sisa" value="${existing.sisa}" onchange="markUnsaved(${b.ID})"></td>
             <td><input type="number" class="qty" data-field="kebutuhan" value="${existing.kebutuhan}" onchange="markUnsaved(${b.ID})"></td>
             <td><span class="status-tag ${existing.saved ? 'saved' : 'unsaved'}" id="status-${b.ID}">${existing.saved ? 'Tersimpan' : 'Belum diisi'}</span></td>
-            <td><button class="btn btn-primary" onclick="saveRow(${b.ID})">Simpan</button></td>
+            <td>
+              <div style="display:flex; gap:6px;">
+                <button class="btn btn-primary" onclick="saveRow(${b.ID})">Simpan</button>
+                <button class="btn" style="background:#F1F1EE; color:var(--text-muted); padding:7px 10px;" title="Hapus dari daftar ruangan" onclick="removeFromRuangan(${b.ID})">&times;</button>
+              </div>
+            </td>
           </tr>`;
       }).join('');
     }
@@ -463,6 +512,83 @@
       btn.disabled = false; btn.textContent = 'Simpan';
       alert('Gagal menyimpan. Cek koneksi.');
     });
+  }
+
+  function removeFromRuangan(barangId) {
+    const barang = allBarang.find(b => b.ID === barangId);
+    const nama = barang ? barang.NAMA_BARANG : 'barang ini';
+    if (!confirm(`Hapus "${nama}" dari daftar barang ruangan ini?\n\nData kebutuhan bulan-bulan sebelumnya tetap aman, cuma barang ini tidak akan muncul lagi mulai sekarang.`)) return;
+
+    fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({
+        action: 'removeBarangRuangan',
+        email: currentUser.EMAIL,
+        ruangan_id: activeRuanganId,
+        barang_id: barangId
+      })
+    }).then(r => r.json()).then(res => {
+      if (res.success) {
+        loadBarangDanKebutuhan();
+      } else {
+        alert(res.message);
+      }
+    }).catch(() => alert('Gagal menghapus. Cek koneksi.'));
+  }
+
+  // ---------- MODAL TAMBAH BARANG ----------
+  function openTambahBarangModal() {
+    document.getElementById('tambahBarangSearch').value = '';
+    document.getElementById('tambahBarangResults').innerHTML = '<div class="empty-state">Ketik nama barang untuk mencari...</div>';
+    document.getElementById('modalTambahBarang').classList.add('show');
+    document.getElementById('tambahBarangSearch').focus();
+  }
+
+  function closeTambahBarangModal() {
+    document.getElementById('modalTambahBarang').classList.remove('show');
+  }
+
+  function searchTambahBarang() {
+    const q = document.getElementById('tambahBarangSearch').value.trim().toLowerCase();
+    const container = document.getElementById('tambahBarangResults');
+    if (!q) { container.innerHTML = '<div class="empty-state">Ketik nama barang untuk mencari...</div>'; return; }
+
+    const sudahAda = new Set(allBarang.map(b => b.ID));
+    const hasil = fullMasterBarang
+      .filter(b => b.NAMA_BARANG.toLowerCase().includes(q) && !sudahAda.has(b.ID))
+      .slice(0, 30);
+
+    if (hasil.length === 0) {
+      container.innerHTML = '<div class="empty-state">Tidak ada barang yang cocok (atau sudah ada di daftar ruangan).</div>';
+      return;
+    }
+
+    container.innerHTML = hasil.map(b => `
+      <div class="search-result-item">
+        <span>${escapeHtml(b.NAMA_BARANG)} <span style="color:var(--text-muted); font-size:11.5px;">(${escapeHtml(b.SATUAN_JUAL || '-')})</span></span>
+        <button class="btn btn-primary" style="padding:6px 12px; font-size:12px;" onclick="tambahBarangKeRuangan(${b.ID})">+ Tambah</button>
+      </div>`).join('');
+  }
+
+  function tambahBarangKeRuangan(barangId) {
+    fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({
+        action: 'addBarangRuangan',
+        email: currentUser.EMAIL,
+        ruangan_id: activeRuanganId,
+        barang_id: barangId
+      })
+    }).then(r => r.json()).then(res => {
+      if (res.success) {
+        closeTambahBarangModal();
+        loadBarangDanKebutuhan();
+      } else {
+        alert(res.message);
+      }
+    }).catch(() => alert('Gagal menambahkan. Cek koneksi.'));
   }
 
   function escapeHtml(str) {
