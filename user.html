@@ -55,7 +55,10 @@
     .left-col { position: static; }
   }
 
-  .toolbar { display: flex; gap: 12px; align-items: center; margin-bottom: 16px; flex-wrap: wrap; }
+  .toolbar {
+    display: flex; gap: 12px; align-items: center; margin-bottom: 16px; flex-wrap: wrap;
+    position: sticky; top: 84px; z-index: 90; background: var(--bg); padding: 12px 0;
+  }
   .toolbar input[type="text"] { flex: 1; min-width: 220px; padding: 10px 14px; border: 1px solid var(--border); border-radius: 9px; font-size: 13.5px; }
   .toolbar select { padding: 10px 12px; border: 1px solid var(--border); border-radius: 9px; font-size: 13.5px; }
 
