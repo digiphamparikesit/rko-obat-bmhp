@@ -51,7 +51,10 @@
     .left-col { position: static; }
   }
 
-  .stat-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 18px; }
+  .stat-row {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 18px;
+    position: sticky; top: 84px; z-index: 90; background: var(--bg); padding-top: 12px; margin-top: -12px;
+  }
   .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 16px 18px; }
   .stat-card .num { font-size: 20px; font-weight: 700; }
   .stat-card .lbl { font-size: 12px; color: var(--text-muted); margin-top: 3px; }
