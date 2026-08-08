@@ -34,7 +34,7 @@
   .who { font-size: 12.5px; color: rgba(255,255,255,0.85); }
   a.back { color: rgba(255,255,255,0.85); text-decoration: none; font-size: 13px; }
   a.back:hover { color: #fff; }
-  select { background: rgba(255,255,255,0.12); color: #fff; border: 1px solid rgba(255,255,255,0.25); border-radius: 8px; padding: 7px 10px; font-size: 13px; font-family: inherit; }
+  .topbar select { background: rgba(255,255,255,0.12); color: #fff; border: 1px solid rgba(255,255,255,0.25); border-radius: 8px; padding: 7px 10px; font-size: 13px; font-family: inherit; }
   select option { color: #14201A; }
 
   main { max-width: 100%; margin: 0; padding: 24px 20px 60px; }
@@ -183,6 +183,10 @@
 <div id="modalOverlay">
   <div class="modal">
     <h2>Buat PO Baru</h2>
+    <div class="field">
+      <label>No. PO</label>
+      <input type="text" id="fNoPo" placeholder="mis. PO-2026-08-001">
+    </div>
     <div class="field">
       <label>Barang (dari rencana belanja periode ini)</label>
       <select id="fBarang"><option value="">Pilih barang...</option></select>
@@ -382,6 +386,7 @@
 
   function openForm() {
     document.getElementById('formMsg').textContent = '';
+    document.getElementById('fNoPo').value = '';
     document.getElementById('fBarang').value = '';
     document.getElementById('fDistributor').value = '';
     document.getElementById('fQty').value = '';
@@ -392,11 +397,13 @@
   function closeForm() { document.getElementById('modalOverlay').classList.remove('show'); }
 
   function submitForm() {
+    const noPo = document.getElementById('fNoPo').value.trim();
     const barangId = document.getElementById('fBarang').value;
     const distId = document.getElementById('fDistributor').value;
     const qty = Number(document.getElementById('fQty').value) || 0;
     const msg = document.getElementById('formMsg');
 
+    if (!noPo) { msg.textContent = 'Isi No. PO dulu.'; return; }
     if (!barangId) { msg.textContent = 'Pilih barang dulu.'; return; }
     if (!distId) { msg.textContent = 'Pilih distributor dulu.'; return; }
     if (qty <= 0) { msg.textContent = 'Qty pesan harus lebih dari 0.'; return; }
@@ -409,6 +416,7 @@
       body: JSON.stringify({
         action: 'addPembelian',
         email: currentUser.EMAIL,
+        no_po: noPo,
         barang_id: barangId,
         distributor_id: distId,
         bulan: document.getElementById('bulanSelect').value,
