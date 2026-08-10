@@ -72,6 +72,10 @@
   .list-item .val { color: var(--text-muted); font-size: 12.5px; }
 
   .empty-mini { text-align: center; color: var(--text-muted); font-size: 12.5px; padding: 20px 0; }
+
+  .mini-stat-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .mini-num { font-size: 17px; font-weight: 700; font-family: 'Poppins', sans-serif; }
+  .mini-lbl { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
   footer.note { text-align: center; color: var(--text-muted); font-size: 11.5px; margin-top: 18px; }
 
   @media (max-width: 900px) { .stat-grid { grid-template-columns: repeat(2, 1fr); } .grid-2 { grid-template-columns: 1fr; } }
@@ -171,6 +175,30 @@
       <h2>Distributor terbesar</h2>
       <p class="sub">Berdasarkan nilai rencana belanja</p>
       <div id="listDistributor"><div class="empty-mini">Memuat data...</div></div>
+    </div>
+  </section>
+
+  <section class="grid-2">
+    <div class="panel">
+      <h2>Penjualan &amp; margin</h2>
+      <p class="sub">Dari data upload menu Penjualan bulan ini</p>
+      <div class="mini-stat-row">
+        <div><div class="mini-num" id="statHargaJual">-</div><div class="mini-lbl">Harga jual</div></div>
+        <div><div class="mini-num" id="statHppTerjual">-</div><div class="mini-lbl">HPP terjual</div></div>
+        <div><div class="mini-num" id="statSurplus">-</div><div class="mini-lbl">Surplus/margin</div></div>
+      </div>
+      <div class="empty-mini" id="penjualanEmpty" style="display:none;">Belum ada data penjualan untuk periode ini.</div>
+    </div>
+
+    <div class="panel">
+      <h2>Status pembelian &amp; penerimaan</h2>
+      <p class="sub">Dari PO yang dibuat bulan ini</p>
+      <div class="mini-stat-row">
+        <div><div class="mini-num" id="statJumlahPO">-</div><div class="mini-lbl">Jumlah PO dibuat</div></div>
+        <div><div class="mini-num" id="statPoBelumTerima">-</div><div class="mini-lbl">PO belum diterima</div></div>
+        <div><div class="mini-num" id="statPersenDatang">-</div><div class="mini-lbl">Barang sudah datang</div></div>
+      </div>
+      <div class="empty-mini" id="pembelianEmpty" style="display:none;">Belum ada PO untuk periode ini.</div>
     </div>
   </section>
 
@@ -328,6 +356,40 @@
             <span class="name">${escapeHtml(item.nama)}</span>
             <span class="val">Rp ${Math.round(item.nilai).toLocaleString('id-ID')}</span>
           </div>`).join('');
+
+    // ----- CELAH 1: Penjualan & Margin -----
+    const jual = d.penjualan;
+    const penjualanEmpty = document.getElementById('penjualanEmpty');
+    if (!jual || (jual.totalHppTerjual === 0 && jual.totalHargaJual === 0)) {
+      penjualanEmpty.style.display = 'block';
+      document.getElementById('statHargaJual').textContent = '-';
+      document.getElementById('statHppTerjual').textContent = '-';
+      document.getElementById('statSurplus').textContent = '-';
+    } else {
+      penjualanEmpty.style.display = 'none';
+      document.getElementById('statHargaJual').textContent = formatRpSingkat(jual.totalHargaJual);
+      document.getElementById('statHppTerjual').textContent = formatRpSingkat(jual.totalHppTerjual);
+      const surplusEl = document.getElementById('statSurplus');
+      surplusEl.textContent = formatRpSingkat(jual.surplus) + (jual.persentaseMargin !== null ? ` (${jual.persentaseMargin}%)` : '');
+      surplusEl.style.color = jual.surplus >= 0 ? 'var(--green-mid)' : 'var(--coral)';
+    }
+
+    // ----- CELAH 2: Status Pembelian & Penerimaan -----
+    const po = d.pembelian;
+    const pembelianEmpty = document.getElementById('pembelianEmpty');
+    if (!po || po.jumlahPO === 0) {
+      pembelianEmpty.style.display = 'block';
+      document.getElementById('statJumlahPO').textContent = '-';
+      document.getElementById('statPoBelumTerima').textContent = '-';
+      document.getElementById('statPersenDatang').textContent = '-';
+    } else {
+      pembelianEmpty.style.display = 'none';
+      document.getElementById('statJumlahPO').textContent = po.jumlahPO.toLocaleString('id-ID');
+      const belumEl = document.getElementById('statPoBelumTerima');
+      belumEl.textContent = po.jumlahPoBelumDiterima + ' (' + formatRpSingkat(po.nilaiBelumDiterima) + ')';
+      belumEl.style.color = po.jumlahPoBelumDiterima > 0 ? 'var(--amber)' : 'var(--green-mid)';
+      document.getElementById('statPersenDatang').textContent = po.persenBarangDatang !== null ? po.persenBarangDatang + '%' : '-';
+    }
   }
 
   function formatRpSingkat(v) {
