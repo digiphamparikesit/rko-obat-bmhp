@@ -66,6 +66,10 @@
 
   .empty-mini { text-align: center; color: var(--text-muted); font-size: 12.5px; padding: 20px 0; }
 
+  .mini-stat-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .mini-num { font-size: 17px; font-weight: 700; font-family: 'Poppins', sans-serif; }
+  .mini-lbl { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
   @media (max-width: 900px) { .stat-grid { grid-template-columns: repeat(2, 1fr); } .grid-2 { grid-template-columns: 1fr; } }
 </style>
 </head>
@@ -134,6 +138,18 @@
       </table>
     </div>
   </div>
+
+  <div class="panel">
+    <h2>Penjualan &amp; margin tahunan</h2>
+    <p class="sub">Dari data upload menu Penjualan &middot; dalam juta rupiah</p>
+    <canvas id="chartPenjualan" height="90"></canvas>
+    <div class="empty-mini" id="penjualanTahunanEmpty" style="display:none;">Belum ada data penjualan untuk tahun ini.</div>
+    <div class="mini-stat-row" style="margin-top:16px;">
+      <div><div class="mini-num" id="statTotalHpp">-</div><div class="mini-lbl">Total HPP terjual</div></div>
+      <div><div class="mini-num" id="statTotalJual">-</div><div class="mini-lbl">Total harga jual</div></div>
+      <div><div class="mini-num" id="statTotalMargin">-</div><div class="mini-lbl">Total surplus/margin</div></div>
+    </div>
+  </div>
 </main>
 </div>
 
@@ -181,14 +197,17 @@
     Promise.all([
       fetch(API_URL + `?action=getRencanaBelanja&tahun=${tahun}`).then(r => r.json()),
       fetch(API_URL + `?action=getRealisasi&tahun=${tahun}`).then(r => r.json()),
+      fetch(API_URL + `?action=getPenjualan&tahun=${tahun}`).then(r => r.json()),
       fetch(API_URL + '?action=getMasterBarang').then(r => r.json())
-    ]).then(([rencanaRes, realisasiRes, barangRes]) => {
+    ]).then(([rencanaRes, realisasiRes, penjualanRes, barangRes]) => {
       const rencana = rencanaRes.success ? rencanaRes.data : [];
       const realisasi = realisasiRes.success ? realisasiRes.data : [];
+      const penjualan = penjualanRes.success ? penjualanRes.data : [];
       const barangMap = {};
       (barangRes.success ? barangRes.data : []).forEach(b => { barangMap[b.ID] = b; });
 
       renderLaporan(rencana, realisasi, barangMap);
+      renderPenjualanTahunan(penjualan);
     }).catch(() => {
       document.getElementById('tableBulanan').innerHTML = '<tr><td colspan="4" class="empty-mini">Gagal memuat data dari server.</td></tr>';
     });
@@ -270,6 +289,61 @@
       const c = r > 0 ? Math.round((a / r) * 100) : (a > 0 ? 100 : 0);
       return `<tr><td>${nm}</td><td class="num-cell">Rp ${Math.round(r).toLocaleString('id-ID')}</td><td class="num-cell">Rp ${Math.round(a).toLocaleString('id-ID')}</td><td class="num-cell">${c}%</td></tr>`;
     }).join('');
+  }
+
+  let chartPenjualan;
+  function renderPenjualanTahunan(penjualan) {
+    const hppPerBulan = new Array(12).fill(0);
+    const jualPerBulan = new Array(12).fill(0);
+
+    penjualan.forEach(p => {
+      const b = Number(p.BULAN) - 1;
+      if (b >= 0 && b < 12) {
+        hppPerBulan[b] += Number(p.HPP_TERJUAL) || 0;
+        jualPerBulan[b] += Number(p.HARGA_JUAL) || 0;
+      }
+    });
+
+    const totalHpp = hppPerBulan.reduce((a, b) => a + b, 0);
+    const totalJual = jualPerBulan.reduce((a, b) => a + b, 0);
+    const totalMargin = totalJual - totalHpp;
+
+    const canvas = document.getElementById('chartPenjualan');
+    const emptyEl = document.getElementById('penjualanTahunanEmpty');
+
+    if (totalHpp === 0 && totalJual === 0) {
+      canvas.style.display = 'none';
+      emptyEl.style.display = 'block';
+      document.getElementById('statTotalHpp').textContent = '-';
+      document.getElementById('statTotalJual').textContent = '-';
+      document.getElementById('statTotalMargin').textContent = '-';
+      return;
+    }
+
+    canvas.style.display = 'block';
+    emptyEl.style.display = 'none';
+    document.getElementById('statTotalHpp').textContent = formatRpSingkat(totalHpp);
+    document.getElementById('statTotalJual').textContent = formatRpSingkat(totalJual);
+    const marginEl = document.getElementById('statTotalMargin');
+    marginEl.textContent = formatRpSingkat(totalMargin);
+    marginEl.style.color = totalMargin >= 0 ? 'var(--green-mid)' : 'var(--coral)';
+
+    if (chartPenjualan) chartPenjualan.destroy();
+    chartPenjualan = new Chart(canvas, {
+      type: 'bar',
+      data: {
+        labels: NAMA_BULAN,
+        datasets: [
+          { label: 'HPP terjual', data: hppPerBulan.map(v => Math.round(v / 1000000)), backgroundColor: '#F5C4B3', borderRadius: 5, maxBarThickness: 22 },
+          { label: 'Harga jual', data: jualPerBulan.map(v => Math.round(v / 1000000)), backgroundColor: '#EA580C', borderRadius: 5, maxBarThickness: 22 }
+        ]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { position: 'top', labels: { boxWidth: 12, font: { size: 12 } } } },
+        scales: { y: { grid: { color: '#EEF2EE' }, ticks: { callback: v => v + ' Jt' } }, x: { grid: { display: false } } }
+      }
+    });
   }
 
   function formatRpSingkat(v) {
