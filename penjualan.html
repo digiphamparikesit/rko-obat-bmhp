@@ -190,6 +190,7 @@
 
     <div class="form-msg" id="uploadMsg"></div>
     <div class="modal-actions">
+      <button class="btn" id="btnDownloadBermasalah" style="background:#FBEAE7; color:var(--coral); margin-right:auto;" onclick="downloadBarisBermasalah()" disabled>&#8595; Download Baris Bermasalah (CSV)</button>
       <button class="btn btn-secondary" onclick="closeUploadModal()">Batal</button>
       <button class="btn btn-primary" id="btnConfirmUpload" onclick="confirmUpload()" disabled>Import baris yang valid</button>
     </div>
@@ -329,6 +330,7 @@
     document.getElementById('uploadPreviewWrap').style.display = 'none';
     document.getElementById('uploadMsg').textContent = '';
     document.getElementById('btnConfirmUpload').disabled = true;
+    document.getElementById('btnDownloadBermasalah').disabled = true;
     uploadRows = [];
     document.getElementById('modalUpload').classList.add('show');
   }
@@ -433,7 +435,44 @@
     }).join('');
 
     document.getElementById('btnConfirmUpload').disabled = valid.length === 0;
+    document.getElementById('btnDownloadBermasalah').disabled = invalid.length === 0;
     document.getElementById('uploadMsg').textContent = '';
+  }
+
+  function downloadBarisBermasalah() {
+    const bermasalah = uploadRows.filter(r => r.statusBaris === 'invalid');
+    if (bermasalah.length === 0) return;
+
+    // urutkan per jenis alasan, biar barang dengan masalah sama ngumpul jadi 1 kelompok
+    const terurut = [...bermasalah].sort((a, b) => a.alasan.localeCompare(b.alasan));
+
+    const header = ['jenis_masalah', 'nama_barang', 'qty_terjual', 'hpp_terjual', 'harga_jual', 'jumlah_transaksi_asli'];
+    const baris = terurut.map(r => [
+      r.alasan,
+      r.nama_barang_csv,
+      r.qty_terjual,
+      r.hpp_terjual,
+      r.harga_jual,
+      r.jumlah_baris_asli
+    ]);
+
+    const csvContent = [header, ...baris]
+      .map(row => row.map(cell => {
+        const s = String(cell ?? '');
+        return s.includes(',') || s.includes('"') ? '"' + s.replace(/"/g, '""') + '"' : s;
+      }).join(','))
+      .join('\n');
+
+    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const tanggal = new Date().toISOString().slice(0, 10);
+    a.href = url;
+    a.download = `Baris_Bermasalah_Penjualan_${tanggal}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   }
 
   function confirmUpload() {
