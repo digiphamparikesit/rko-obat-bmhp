@@ -175,6 +175,14 @@
             <select id="tahunSelect"></select>
           </div>
         </div>
+
+        <div class="panel side-panel">
+          <h2 class="side-title">Koreksi Konversi Satuan</h2>
+          <p class="side-sub" style="margin:-8px 0 12px; font-size:11.5px; color:var(--text-muted);">
+            Cek barang dengan satuan beli berbeda (box/roll dll) yang datanya tersimpan sebelum rumus konversi diperbaiki.
+          </p>
+          <button class="btn" style="width:100%; background:#F1F1EE; color:var(--text-dark);" onclick="bukaTinjauKoreksi()">Tinjau Data yang Perlu Dicek</button>
+        </div>
       </aside>
 
       <section class="right-col">
@@ -218,6 +226,38 @@
     <div id="detailBarangList" style="max-height:400px; overflow-y:auto;"></div>
     <div style="text-align:right; margin-top:16px;">
       <button class="btn" style="background:#F1F1EE; color:var(--text-dark);" onclick="closeDetailBarang()">Tutup</button>
+    </div>
+  </div>
+</div>
+
+<!-- ====== MODAL TINJAU KOREKSI KONVERSI SATUAN ====== -->
+<div id="modalKoreksi" class="modal-overlay">
+  <div class="modal-box" style="max-width:760px;">
+    <h2 class="side-title">Tinjau Koreksi Konversi Satuan</h2>
+    <p class="side-sub" style="margin:-6px 0 12px; font-size:12px; color:var(--text-muted);">
+      Barang dengan satuan beli berbeda (CONTENT &ne; 1) yang sudah punya rencana belanja tersimpan di periode ini.
+      Bandingkan nilai <b>tersimpan</b> vs <b>hasil hitung ulang</b> (berdasarkan Kurang &divide; Content), lalu pilih baris yang mau dikoreksi.
+    </p>
+    <div id="koreksiSummary" style="font-size:13px; margin-bottom:12px;"></div>
+    <div id="koreksiListWrap" style="max-height:400px; overflow-y:auto; border:1px solid var(--border); border-radius:10px;">
+      <table style="width:100%; border-collapse:collapse; font-size:12px;">
+        <thead>
+          <tr style="background:#FAFBFA;">
+            <th style="padding:8px 8px; text-align:center;"><input type="checkbox" id="koreksiCheckAll" onchange="toggleAllKoreksi(this)"></th>
+            <th style="text-align:left; padding:8px 10px; font-size:10.5px; text-transform:uppercase; color:var(--text-muted);">Barang</th>
+            <th style="text-align:right; padding:8px 10px; font-size:10.5px; text-transform:uppercase; color:var(--text-muted);">Qty tersimpan</th>
+            <th style="text-align:right; padding:8px 10px; font-size:10.5px; text-transform:uppercase; color:var(--text-muted);">Qty seharusnya</th>
+            <th style="text-align:right; padding:8px 10px; font-size:10.5px; text-transform:uppercase; color:var(--text-muted);">Rp tersimpan</th>
+            <th style="text-align:right; padding:8px 10px; font-size:10.5px; text-transform:uppercase; color:var(--text-muted);">Rp seharusnya</th>
+          </tr>
+        </thead>
+        <tbody id="koreksiListBody"></tbody>
+      </table>
+    </div>
+    <div class="form-msg" id="koreksiMsg" style="font-size:12.5px; margin-top:10px; min-height:16px;"></div>
+    <div style="text-align:right; margin-top:16px; display:flex; justify-content:flex-end; gap:10px;">
+      <button class="btn" style="background:#F1F1EE; color:var(--text-dark);" onclick="closeTinjauKoreksi()">Tutup</button>
+      <button class="btn btn-primary" id="btnTerapkanKoreksi" onclick="terapkanKoreksi()" disabled>Terapkan Koreksi Terpilih</button>
     </div>
   </div>
 </div>
@@ -326,7 +366,7 @@
       rencanaMap = {};
       (rencanaRes.success ? rencanaRes.data : []).forEach(r => {
         rencanaMap[r.BARANG_ID] = {
-          distributor_id: r.DISTRIBUTOR_ID, qty: r.RENCANA_QTY_SATUAN_BELI, rp: r.RENCANA_RP, saved: true
+          id: r.ID, distributor_id: r.DISTRIBUTOR_ID, qty: r.RENCANA_QTY_SATUAN_BELI, rp: r.RENCANA_RP, saved: true
         };
       });
 
@@ -383,13 +423,13 @@
         ).join('');
 
         return `
-          <tr data-id="${b.ID}" data-hpp="${b.HPP_BELI || 0}">
+          <tr data-id="${b.ID}" data-hpp="${b.HPP_BELI || 0}" data-content="${b.CONTENT || 1}">
             <td><a href="#" class="barang-link" onclick="showDetailBarang(${b.ID}); return false;">${escapeHtml(b.NAMA_BARANG)}</a></td>
-            <td class="num">${kebutuhan.toLocaleString('id-ID')}</td>
-            <td><input type="number" class="qty" data-field="stok" value="${stok}" onchange="recalc(${b.ID})"></td>
-            <td class="num"><span class="badge ${kurang > 0 ? 'kurang' : 'cukup'}">${kurang.toLocaleString('id-ID')}</span></td>
+            <td class="num">${kebutuhan.toLocaleString('id-ID')} <span class="unit-lbl">${escapeHtml(b.SATUAN_JUAL || '')}</span></td>
+            <td><input type="number" class="qty" data-field="stok" value="${stok}" onchange="recalc(${b.ID})"> <span class="unit-lbl">${escapeHtml(b.SATUAN_JUAL || '')}</span></td>
+            <td class="num"><span class="badge ${kurang > 0 ? 'kurang' : 'cukup'}">${kurang.toLocaleString('id-ID')}</span> <span class="unit-lbl">${escapeHtml(b.SATUAN_JUAL || '')}</span></td>
             <td><select class="dist" data-field="dist">${distOptions || '<option value="">-</option>'}</select></td>
-            <td><input type="number" class="qty" data-field="qty" value="${rencana.qty}"></td>
+            <td><input type="number" class="qty" data-field="qty" value="${rencana.qty}"> <span class="unit-lbl">${escapeHtml(b.SATUAN_BELI || '')}</span></td>
             <td><input type="number" class="qty" data-field="rp" value="${rencana.rp}" style="width:110px;"></td>
             <td><span class="status-tag ${rencana.saved ? 'saved' : 'unsaved'}" id="status-${b.ID}">${rencana.saved ? 'Tersimpan' : 'Belum diisi'}</span></td>
             <td><button class="btn btn-primary" onclick="saveRow(${b.ID})">Simpan</button></td>
@@ -412,14 +452,18 @@
     const kebutuhan = kebutuhanTotalPerBarang[barangId] || 0;
     const kurang = Math.max(0, kebutuhan - stok);
     const hpp = Number(row.dataset.hpp) || 0;
+    const content = Number(row.dataset.content) || 1;
 
     row.querySelector('.badge').textContent = kurang.toLocaleString('id-ID');
     row.querySelector('.badge').className = 'badge ' + (kurang > 0 ? 'kurang' : 'cukup');
 
+    // konversi dari satuan jual (kurang) ke satuan beli (qty rencana beli)
+    const qtyBeli = Math.ceil(kurang / content);
+
     const qtyInput = row.querySelector('[data-field="qty"]');
     const rpInput = row.querySelector('[data-field="rp"]');
-    if (!qtyInput.value) qtyInput.value = kurang;
-    if (!rpInput.value) rpInput.value = kurang * hpp;
+    if (!qtyInput.value) qtyInput.value = qtyBeli;
+    if (!rpInput.value) rpInput.value = qtyBeli * hpp;
 
     markUnsaved(barangId);
   }
@@ -452,7 +496,7 @@
 
       tag.textContent = 'Tersimpan'; tag.className = 'status-tag saved';
       stokGudangMap[barangId] = stok;
-      rencanaMap[barangId] = { distributor_id: distId, qty, rp, saved: true };
+      rencanaMap[barangId] = { id: resRencana.data.ID, distributor_id: distId, qty, rp, saved: true };
       updateSummary();
     }).catch(() => {
       btn.disabled = false; btn.textContent = 'Simpan';
@@ -513,6 +557,123 @@
 
   function closeDetailBarang() {
     document.getElementById('modalDetailBarang').classList.remove('show');
+  }
+
+  // ================= TINJAU KOREKSI KONVERSI SATUAN =================
+  let koreksiCandidates = [];
+
+  function bukaTinjauKoreksi() {
+    const msg = document.getElementById('koreksiMsg');
+    msg.textContent = '';
+    document.getElementById('koreksiSummary').textContent = 'Menganalisa data...';
+    document.getElementById('koreksiListBody').innerHTML = '';
+    document.getElementById('btnTerapkanKoreksi').disabled = true;
+    document.getElementById('modalKoreksi').classList.add('show');
+
+    koreksiCandidates = [];
+
+    allBarang.forEach(b => {
+      const content = Number(b.CONTENT) || 1;
+      if (content <= 1) return; // cuma barang dengan konversi (box/roll dll) yang relevan
+
+      const existing = rencanaMap[b.ID];
+      if (!existing || !existing.saved) return; // cuma yang sudah ada data tersimpan
+
+      const kebutuhan = kebutuhanTotalPerBarang[b.ID] || 0;
+      const stok = stokGudangMap[b.ID] || 0;
+      const kurang = Math.max(0, kebutuhan - stok);
+      const hpp = Number(b.HPP_BELI) || 0;
+
+      const qtySeharusnya = Math.ceil(kurang / content);
+      const rpSeharusnya = qtySeharusnya * hpp;
+
+      const qtyTersimpan = Number(existing.qty) || 0;
+      const rpTersimpan = Number(existing.rp) || 0;
+
+      // hanya tampilkan kalau memang beda (jangan penuhi daftar dengan yang sudah benar)
+      if (qtyTersimpan !== qtySeharusnya || rpTersimpan !== rpSeharusnya) {
+        koreksiCandidates.push({
+          barang_id: b.ID, nama: b.NAMA_BARANG,
+          qty_tersimpan: qtyTersimpan, qty_seharusnya: qtySeharusnya,
+          rp_tersimpan: rpTersimpan, rp_seharusnya: rpSeharusnya
+        });
+      }
+    });
+
+    renderKoreksiList();
+  }
+
+  function renderKoreksiList() {
+    const summary = document.getElementById('koreksiSummary');
+    const body = document.getElementById('koreksiListBody');
+
+    if (koreksiCandidates.length === 0) {
+      summary.innerHTML = '<span style="color:var(--green-mid); font-weight:600;">Aman — tidak ada barang yang perlu dikoreksi di periode ini.</span>';
+      body.innerHTML = '';
+      document.getElementById('btnTerapkanKoreksi').disabled = true;
+      return;
+    }
+
+    summary.innerHTML = `Ditemukan <strong style="color:var(--coral);">${koreksiCandidates.length} barang</strong> yang nilainya beda dari hasil hitung ulang. Semua tercentang secara default — hilangkan centang kalau ada yang tidak mau dikoreksi.`;
+
+    body.innerHTML = koreksiCandidates.map((c, idx) => `
+      <tr style="border-bottom:1px solid var(--border);">
+        <td style="padding:7px 8px; text-align:center;"><input type="checkbox" class="koreksi-check" data-idx="${idx}" checked></td>
+        <td style="padding:7px 10px;">${escapeHtml(c.nama)}</td>
+        <td style="padding:7px 10px; text-align:right;">${c.qty_tersimpan.toLocaleString('id-ID')}</td>
+        <td style="padding:7px 10px; text-align:right; color:var(--green-mid); font-weight:600;">${c.qty_seharusnya.toLocaleString('id-ID')}</td>
+        <td style="padding:7px 10px; text-align:right;">Rp${c.rp_tersimpan.toLocaleString('id-ID')}</td>
+        <td style="padding:7px 10px; text-align:right; color:var(--green-mid); font-weight:600;">Rp${c.rp_seharusnya.toLocaleString('id-ID')}</td>
+      </tr>`).join('');
+
+    document.getElementById('btnTerapkanKoreksi').disabled = false;
+  }
+
+  function toggleAllKoreksi(checkbox) {
+    document.querySelectorAll('.koreksi-check').forEach(c => { c.checked = checkbox.checked; });
+  }
+
+  function closeTinjauKoreksi() {
+    document.getElementById('modalKoreksi').classList.remove('show');
+  }
+
+  function terapkanKoreksi() {
+    const checked = Array.from(document.querySelectorAll('.koreksi-check:checked')).map(c => Number(c.dataset.idx));
+    if (checked.length === 0) {
+      document.getElementById('koreksiMsg').textContent = 'Tidak ada baris yang dicentang.';
+      return;
+    }
+
+    const items = checked.map(idx => {
+      const c = koreksiCandidates[idx];
+      const existingRow = rencanaMap[c.barang_id];
+      return { id: existingRow.id, rencana_qty: c.qty_seharusnya, rencana_rp: c.rp_seharusnya };
+    });
+
+    const msg = document.getElementById('koreksiMsg');
+    msg.textContent = `Menerapkan koreksi untuk ${items.length} barang...`;
+    document.getElementById('btnTerapkanKoreksi').disabled = true;
+
+    fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({
+        action: 'bulkKoreksiRencanaBelanja',
+        email: currentUser.EMAIL,
+        items: items
+      })
+    }).then(r => r.json()).then(res => {
+      if (res.success) {
+        msg.textContent = `Berhasil! ${res.data.jumlah_dikoreksi} barang dikoreksi.`;
+        setTimeout(() => { closeTinjauKoreksi(); loadAllData(); }, 1200);
+      } else {
+        msg.textContent = res.message;
+        document.getElementById('btnTerapkanKoreksi').disabled = false;
+      }
+    }).catch(() => {
+      msg.textContent = 'Gagal menerapkan koreksi. Cek koneksi.';
+      document.getElementById('btnTerapkanKoreksi').disabled = false;
+    });
   }
 
   function escapeHtml(str) {
