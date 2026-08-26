@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Pembelian — RKO RSAMP</title>
+<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 <style>
   :root {
     --green-deep: #0F3D2E; --green-mid: #16A34A; --green-bright: #3FCF6A; --green-soft: #E7F5EC;
@@ -76,6 +77,8 @@
 
   #modalOverlay { display: none; position: fixed; inset: 0; background: rgba(15,61,46,0.45); align-items: center; justify-content: center; z-index: 40; padding: 20px; }
   #modalOverlay.show { display: flex; }
+  #modalUpload { display: none; position: fixed; inset: 0; background: rgba(15,61,46,0.45); align-items: center; justify-content: center; z-index: 40; padding: 20px; }
+  #modalUpload.show { display: flex; }
   .modal { background: #fff; border-radius: 16px; width: 100%; max-width: 460px; max-height: 90vh; overflow-y: auto; padding: 26px; }
   .modal h2 { font-size: 16px; margin: 0 0 16px; }
   .field { margin-bottom: 12px; }
@@ -156,6 +159,7 @@
             </select>
           </div>
           <button class="btn btn-primary" style="width:100%;" onclick="openForm()">+ Buat PO Baru</button>
+          <button class="btn" style="width:100%; margin-top:8px; background:#F1F1EE; color:var(--text-dark);" onclick="openUploadModal()">&#8593; Upload Data dari SIM RS (CSV)</button>
         </div>
       </aside>
 
@@ -214,6 +218,43 @@
     <div class="modal-actions">
       <button class="btn btn-secondary" onclick="closeForm()">Batal</button>
       <button class="btn btn-primary" onclick="submitForm()">Simpan PO</button>
+    </div>
+  </div>
+</div>
+
+<!-- ====== MODAL UPLOAD DATA DARI SIM RS ====== -->
+<div id="modalUpload">
+  <div class="modal" style="max-width:720px;">
+    <h2>Upload Data Pembelian dari SIM RS</h2>
+    <p style="font-size:12.5px; color:var(--text-muted); margin:-8px 0 16px;">
+      Export data PO dari SIM RS ke CSV, lalu upload di sini. Kolom yang dibutuhkan (nama kolom harus persis):<br>
+      <code style="background:#F1F1EE; padding:2px 6px; border-radius:5px; font-size:11.5px;">no_po, no_faktur, nama_barang, distributor, qty_pesan, satuan_beli, tanggal_po</code>
+    </p>
+
+    <input type="file" id="uploadFile" accept=".csv" onchange="handleUploadFile(event)" style="margin-bottom:14px;">
+
+    <div id="uploadSummary" style="display:none; margin-bottom:12px; font-size:13px;"></div>
+    <div id="uploadPreviewWrap" style="display:none; max-height:340px; overflow-y:auto; border:1px solid var(--border); border-radius:10px;">
+      <table style="width:100%; border-collapse:collapse; font-size:12px;">
+        <thead>
+          <tr style="background:#FAFBFA;">
+            <th style="text-align:left; padding:8px 10px; font-size:10.5px; text-transform:uppercase; color:var(--text-muted);">No. PO</th>
+            <th style="text-align:left; padding:8px 10px; font-size:10.5px; text-transform:uppercase; color:var(--text-muted);">No. Faktur</th>
+            <th style="text-align:left; padding:8px 10px; font-size:10.5px; text-transform:uppercase; color:var(--text-muted);">Barang (dari CSV)</th>
+            <th style="text-align:left; padding:8px 10px; font-size:10.5px; text-transform:uppercase; color:var(--text-muted);">Distributor (dari CSV)</th>
+            <th style="text-align:right; padding:8px 10px; font-size:10.5px; text-transform:uppercase; color:var(--text-muted);">Qty</th>
+            <th style="text-align:left; padding:8px 10px; font-size:10.5px; text-transform:uppercase; color:var(--text-muted);">Status</th>
+          </tr>
+        </thead>
+        <tbody id="uploadPreviewBody"></tbody>
+      </table>
+    </div>
+
+    <div class="form-msg" id="uploadMsg"></div>
+    <div class="modal-actions">
+      <button class="btn" id="btnDownloadBermasalah" style="background:#FBEAE7; color:var(--coral); margin-right:auto;" onclick="downloadBarisBermasalah()" disabled>&#8595; Download Baris Bermasalah (CSV)</button>
+      <button class="btn btn-secondary" onclick="closeUploadModal()">Batal</button>
+      <button class="btn btn-primary" id="btnConfirmUpload" onclick="confirmUpload()" disabled>Import baris yang valid</button>
     </div>
   </div>
 </div>
@@ -430,6 +471,172 @@
       closeForm();
       loadAllData();
     }).catch(() => { msg.textContent = 'Gagal menyimpan. Cek koneksi.'; });
+  }
+
+  // ================= UPLOAD DATA DARI SIM RS (CSV) =================
+  let uploadRows = [];
+
+  function openUploadModal() {
+    document.getElementById('uploadFile').value = '';
+    document.getElementById('uploadSummary').style.display = 'none';
+    document.getElementById('uploadPreviewWrap').style.display = 'none';
+    document.getElementById('uploadMsg').textContent = '';
+    document.getElementById('btnConfirmUpload').disabled = true;
+    document.getElementById('btnDownloadBermasalah').disabled = true;
+    uploadRows = [];
+    document.getElementById('modalUpload').classList.add('show');
+  }
+  function closeUploadModal() { document.getElementById('modalUpload').classList.remove('show'); }
+
+  function handleUploadFile(evt) {
+    const file = evt.target.files[0];
+    if (!file) return;
+
+    Papa.parse(file, {
+      header: true,
+      skipEmptyLines: true,
+      complete: function (res) { processUploadRows(res.data); },
+      error: function () {
+        document.getElementById('uploadMsg').textContent = 'Gagal membaca file CSV. Pastikan formatnya benar.';
+      }
+    });
+  }
+
+  function processUploadRows(rawRows) {
+    const barangNameMap = {};
+    Object.values(barangMap).forEach(b => { barangNameMap[String(b.NAMA_BARANG).trim().toUpperCase()] = b.ID; });
+    const distNameMap = {};
+    distributorList.forEach(d => { distNameMap[String(d.NAMA_DISTRIBUTOR).trim().toUpperCase()] = d.ID; });
+
+    const bulan = document.getElementById('bulanSelect').value;
+    const tahun = document.getElementById('tahunSelect').value;
+    const existingKey = new Set(pembelianList.map(p => (p.NO_PO + '||' + p.BARANG_ID).toUpperCase()));
+
+    uploadRows = rawRows.map(row => {
+      const noPo = (row.no_po || '').trim();
+      const noFaktur = (row.no_faktur || '').trim();
+      const namaBarangCsv = (row.nama_barang || '').trim();
+      const distCsv = (row.distributor || '').trim();
+      const qty = Number(row.qty_pesan) || 0;
+      const satuanBeli = (row.satuan_beli || '').trim();
+      const tanggalPo = (row.tanggal_po || '').trim();
+
+      const barangId = barangNameMap[namaBarangCsv.toUpperCase()];
+      const distId = distNameMap[distCsv.toUpperCase()];
+
+      let statusBaris = 'valid';
+      let alasan = '';
+
+      if (!noPo) { statusBaris = 'invalid'; alasan = 'No. PO kosong'; }
+      else if (!namaBarangCsv) { statusBaris = 'invalid'; alasan = 'Nama barang kosong'; }
+      else if (!barangId) { statusBaris = 'invalid'; alasan = 'Nama barang tidak ditemukan di master'; }
+      else if (!distId) { statusBaris = 'invalid'; alasan = 'Distributor tidak ditemukan di master'; }
+      else if (qty <= 0) { statusBaris = 'invalid'; alasan = 'Qty pesan harus > 0'; }
+      else if (existingKey.has((noPo + '||' + barangId).toUpperCase())) { statusBaris = 'duplikat'; alasan = 'Sudah ada di sistem, dilewati'; }
+
+      return {
+        no_po: noPo, no_faktur: noFaktur, nama_barang_csv: namaBarangCsv, distributor_csv: distCsv,
+        barang_id: barangId, distributor_id: distId, qty_pesan: qty,
+        satuan_beli: satuanBeli, tanggal_po: tanggalPo, status: 'DIKIRIM',
+        bulan: bulan, tahun: tahun,
+        statusBaris: statusBaris, alasan: alasan
+      };
+    });
+
+    renderUploadPreview();
+  }
+
+  function renderUploadPreview() {
+    const valid = uploadRows.filter(r => r.statusBaris === 'valid');
+    const invalid = uploadRows.filter(r => r.statusBaris === 'invalid');
+    const dup = uploadRows.filter(r => r.statusBaris === 'duplikat');
+
+    document.getElementById('uploadSummary').style.display = 'block';
+    document.getElementById('uploadSummary').innerHTML =
+      `Total <strong>${uploadRows.length}</strong> baris dibaca — ` +
+      `<span style="color:var(--green-mid); font-weight:600;">${valid.length} valid</span>, ` +
+      `<span style="color:var(--text-muted); font-weight:600;">${dup.length} duplikat (dilewati)</span>, ` +
+      `<span style="color:var(--coral); font-weight:600;">${invalid.length} bermasalah</span>`;
+
+    document.getElementById('uploadPreviewWrap').style.display = 'block';
+    document.getElementById('uploadPreviewBody').innerHTML = uploadRows.map(r => {
+      const badgeColor = r.statusBaris === 'valid' ? 'var(--green-mid)' : (r.statusBaris === 'duplikat' ? 'var(--text-muted)' : 'var(--coral)');
+      const badgeBg = r.statusBaris === 'valid' ? 'var(--green-soft)' : (r.statusBaris === 'duplikat' ? '#F1F1EE' : '#FBEAE7');
+      const label = r.statusBaris === 'valid' ? 'Siap import' : (r.statusBaris === 'duplikat' ? 'Duplikat' : r.alasan);
+      return `<tr style="border-bottom:1px solid var(--border);">
+        <td style="padding:7px 10px;">${escapeHtml(r.no_po || '-')}</td>
+        <td style="padding:7px 10px;">${escapeHtml(r.no_faktur || '-')}</td>
+        <td style="padding:7px 10px;">${escapeHtml(r.nama_barang_csv || '-')}</td>
+        <td style="padding:7px 10px;">${escapeHtml(r.distributor_csv || '-')}</td>
+        <td style="padding:7px 10px; text-align:right;">${r.qty_pesan || '-'}</td>
+        <td style="padding:7px 10px;"><span style="font-size:10.5px; font-weight:700; padding:2px 8px; border-radius:999px; color:${badgeColor}; background:${badgeBg};">${escapeHtml(label)}</span></td>
+      </tr>`;
+    }).join('');
+
+    document.getElementById('btnConfirmUpload').disabled = valid.length === 0;
+    document.getElementById('btnDownloadBermasalah').disabled = invalid.length === 0;
+    document.getElementById('uploadMsg').textContent = '';
+  }
+
+  function downloadBarisBermasalah() {
+    const bermasalah = uploadRows.filter(r => r.statusBaris === 'invalid');
+    if (bermasalah.length === 0) return;
+
+    const terurut = [...bermasalah].sort((a, b) => a.alasan.localeCompare(b.alasan));
+    const header = ['jenis_masalah', 'no_po', 'no_faktur', 'nama_barang', 'distributor', 'qty_pesan', 'tanggal_po'];
+    const baris = terurut.map(r => [r.alasan, r.no_po, r.no_faktur, r.nama_barang_csv, r.distributor_csv, r.qty_pesan, r.tanggal_po]);
+
+    const csvContent = [header, ...baris]
+      .map(row => row.map(cell => {
+        const s = String(cell ?? '');
+        return s.includes(',') || s.includes('"') ? '"' + s.replace(/"/g, '""') + '"' : s;
+      }).join(','))
+      .join('\n');
+
+    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const tanggal = new Date().toISOString().slice(0, 10);
+    a.href = url;
+    a.download = `Baris_Bermasalah_Pembelian_${tanggal}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  function confirmUpload() {
+    const valid = uploadRows.filter(r => r.statusBaris === 'valid');
+    if (valid.length === 0) return;
+
+    const msg = document.getElementById('uploadMsg');
+    msg.textContent = `Mengimpor ${valid.length} baris...`;
+    document.getElementById('btnConfirmUpload').disabled = true;
+
+    fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({
+        action: 'bulkImportPembelian',
+        email: currentUser.EMAIL,
+        items: valid.map(r => ({
+          no_po: r.no_po, no_faktur: r.no_faktur, barang_id: r.barang_id, distributor_id: r.distributor_id,
+          qty_pesan: r.qty_pesan, satuan_beli: r.satuan_beli,
+          bulan: r.bulan, tahun: r.tahun, tanggal_po: r.tanggal_po, status: r.status
+        }))
+      })
+    }).then(r => r.json()).then(res => {
+      if (res.success) {
+        msg.textContent = `Berhasil! ${res.data.jumlah_diimport} baris PO diimpor.`;
+        setTimeout(() => { closeUploadModal(); loadAllData(); }, 1200);
+      } else {
+        msg.textContent = res.message;
+        document.getElementById('btnConfirmUpload').disabled = false;
+      }
+    }).catch(() => {
+      msg.textContent = 'Gagal mengimpor. Cek koneksi.';
+      document.getElementById('btnConfirmUpload').disabled = false;
+    });
   }
 
   function escapeHtml(str) {
