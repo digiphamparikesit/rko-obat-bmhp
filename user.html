@@ -195,12 +195,13 @@
                 <th>Satuan</th>
                 <th>Sisa stok</th>
                 <th>Kebutuhan</th>
+                <th>Estimasi Nilai (Rp)</th>
                 <th>Status</th>
                 <th></th>
               </tr>
             </thead>
             <tbody id="tableBody">
-              <tr><td colspan="6" class="empty-state">Memuat data...</td></tr>
+              <tr><td colspan="7" class="empty-state">Memuat data...</td></tr>
             </tbody>
           </table>
           <div class="pager">
@@ -349,7 +350,7 @@
   function loadBarangDanKebutuhan() {
     const bulan = document.getElementById('bulanSelect').value;
     const tahun = document.getElementById('tahunSelect').value;
-    document.getElementById('tableBody').innerHTML = '<tr><td colspan="6" class="empty-state">Memuat data...</td></tr>';
+    document.getElementById('tableBody').innerHTML = '<tr><td colspan="7" class="empty-state">Memuat data...</td></tr>';
 
     Promise.all([
       fetch(API_URL + '?action=getMasterBarang').then(r => r.json()),
@@ -391,7 +392,7 @@
 
       applyFilter();
     }).catch(() => {
-      document.getElementById('tableBody').innerHTML = '<tr><td colspan="6" class="empty-state">Gagal memuat data dari server.</td></tr>';
+      document.getElementById('tableBody').innerHTML = '<tr><td colspan="7" class="empty-state">Gagal memuat data dari server.</td></tr>';
     });
   }
 
@@ -444,18 +445,21 @@
     const pageItems = filteredBarang.slice(start, start + PAGE_SIZE);
 
     if (pageItems.length === 0 && allBarang.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="6" class="empty-state">Ruangan ini belum punya barang terdaftar. Klik "+ Tambah Barang" di atas untuk mulai.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="7" class="empty-state">Ruangan ini belum punya barang terdaftar. Klik "+ Tambah Barang" di atas untuk mulai.</td></tr>';
     } else if (pageItems.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="6" class="empty-state">Tidak ada barang yang cocok dengan pencarian/filter.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="7" class="empty-state">Tidak ada barang yang cocok dengan pencarian/filter.</td></tr>';
     } else {
       tbody.innerHTML = pageItems.map(b => {
         const existing = existingKebutuhan[b.ID] || { sisa: '', kebutuhan: '', saved: false };
+        const hpp = Number(b.HPP_BELI) || 0;
+        const estimasiAwal = (Number(existing.kebutuhan) || 0) * hpp;
         return `
-          <tr data-id="${b.ID}">
+          <tr data-id="${b.ID}" data-hpp="${hpp}">
             <td>${escapeHtml(b.NAMA_BARANG)}</td>
             <td>${escapeHtml(b.SATUAN_JUAL || '-')}</td>
             <td><input type="number" class="qty" data-field="sisa" value="${existing.sisa}" onchange="markUnsaved(${b.ID})"></td>
-            <td><input type="number" class="qty" data-field="kebutuhan" value="${existing.kebutuhan}" onchange="markUnsaved(${b.ID})"></td>
+            <td><input type="number" class="qty" data-field="kebutuhan" value="${existing.kebutuhan}" onchange="markUnsaved(${b.ID}); hitungEstimasi(${b.ID});" oninput="hitungEstimasi(${b.ID})"></td>
+            <td><span class="estimasi-nilai" id="estimasi-${b.ID}" style="color:var(--text-muted);">Rp ${estimasiAwal.toLocaleString('id-ID')}</span></td>
             <td><span class="status-tag ${existing.saved ? 'saved' : 'unsaved'}" id="status-${b.ID}">${existing.saved ? 'Tersimpan' : 'Belum diisi'}</span></td>
             <td>
               <div style="display:flex; gap:6px;">
@@ -478,6 +482,16 @@
   function markUnsaved(barangId) {
     const tag = document.getElementById('status-' + barangId);
     if (tag) { tag.textContent = 'Belum disimpan'; tag.className = 'status-tag unsaved'; }
+  }
+
+  function hitungEstimasi(barangId) {
+    const row = document.querySelector(`tr[data-id="${barangId}"]`);
+    if (!row) return;
+    const kebutuhan = Number(row.querySelector('[data-field="kebutuhan"]').value) || 0;
+    const hpp = Number(row.dataset.hpp) || 0;
+    const estimasi = kebutuhan * hpp;
+    const el = document.getElementById('estimasi-' + barangId);
+    if (el) el.textContent = 'Rp ' + estimasi.toLocaleString('id-ID');
   }
 
   // ---------- SIMPAN ----------
