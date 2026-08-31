@@ -6,133 +6,42 @@
 <title>RKO RSAMP</title>
 <style>
   :root {
-    --bg-green: #3FCF6A;
-    --bg-green-dark: #1F9950;
-    --text-dark: #14201A;
+    --green-deep: #0F3D2E; --green-mid: #16A34A; --green-bright: #3FCF6A; --green-soft: #E7F5EC;
+    --bg: #F4F7F4; --card: #FFFFFF; --text-dark: #14201A; --text-muted: #6B7A72; --border: #E4EAE5;
+    --sidebar-w: 260px;
   }
-  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-
+  * { box-sizing: border-box; }
   body {
-    margin: 0;
-    min-height: 100vh;
-    background: linear-gradient(180deg, var(--bg-green) 0%, var(--bg-green-dark) 100%);
+    margin: 0; min-height: 100vh; background: var(--bg);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
     display: flex;
-    justify-content: center;
   }
 
-  .phone {
-    width: 100%;
-    max-width: 420px;
-    min-height: 100vh;
-    padding: 22px 20px 40px;
-    display: flex;
-    flex-direction: column;
+  /* ===== SIDEBAR ===== */
+  .sidebar {
+    width: var(--sidebar-w); flex-shrink: 0; background: var(--green-deep); color: #fff;
+    min-height: 100vh; padding: 24px 0; position: sticky; top: 0; align-self: flex-start;
   }
+  .sidebar-header { display: flex; align-items: center; gap: 12px; padding: 0 20px 24px; border-bottom: 1px solid rgba(255,255,255,0.12); margin-bottom: 12px; }
+  .sidebar-logo {
+    width: 42px; height: 42px; border-radius: 12px; background: var(--green-bright);
+    display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--green-deep); font-size: 15px; flex-shrink: 0;
+  }
+  .sidebar-title { font-weight: 700; font-size: 15px; line-height: 1.3; }
+  .sidebar-sub { font-size: 11px; color: rgba(255,255,255,0.6); }
 
-  /* status-bar style clock, biar berasa layar HP */
-  .statusbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    color: rgba(255,255,255,0.9);
-    font-size: 13px;
-    font-weight: 600;
-    padding: 0 4px 14px;
+  .menu-list { display: flex; flex-direction: column; padding: 4px 10px; gap: 2px; }
+  .menu-item {
+    display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 10px;
+    color: rgba(255,255,255,0.82); text-decoration: none; font-size: 13.5px; font-weight: 500;
+    transition: background 0.15s ease, color 0.15s ease;
   }
-
-  header {
-    text-align: center;
-    margin-bottom: 22px;
+  .menu-item:hover { background: rgba(255,255,255,0.1); color: #fff; }
+  .menu-icon {
+    width: 32px; height: 32px; border-radius: 9px; display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
   }
-
-  .logo-circle {
-    width: 64px;
-    height: 64px;
-    border-radius: 20px;
-    background: rgba(255,255,255,0.95);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 12px;
-    box-shadow: 0 6px 16px rgba(0,0,0,0.15);
-  }
-  .logo-circle svg { width: 34px; height: 34px; }
-
-  h1 {
-    color: #ffffff;
-    font-size: 19px;
-    font-weight: 700;
-    letter-spacing: 0.2px;
-    margin: 0 0 4px;
-    text-shadow: 0 1px 2px rgba(0,0,0,0.1);
-    line-height: 1.3;
-  }
-
-  .subtitle {
-    color: rgba(255,255,255,0.85);
-    font-size: 12.5px;
-    font-weight: 500;
-    margin: 0;
-  }
-
-  /* widget kecil ala HP: ringkasan singkat */
-  .widget {
-    background: rgba(255,255,255,0.16);
-    border: 1px solid rgba(255,255,255,0.25);
-    border-radius: 18px;
-    padding: 14px 18px;
-    margin-bottom: 26px;
-    display: flex;
-    justify-content: space-between;
-    color: #fff;
-  }
-  .widget .item { text-align: center; flex: 1; }
-  .widget .item .num { font-size: 15px; font-weight: 700; }
-  .widget .item .lbl { font-size: 10.5px; color: rgba(255,255,255,0.8); margin-top: 2px; }
-  .widget .divider { width: 1px; background: rgba(255,255,255,0.25); margin: 2px 0; }
-
-  /* grid ikon ala home screen */
-  .app-grid {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    row-gap: 20px;
-    column-gap: 6px;
-  }
-
-  .app-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-decoration: none;
-    gap: 6px;
-  }
-
-  .app-icon {
-    width: 100%;
-    height: 46px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.18);
-    transition: transform 0.12s ease, box-shadow 0.12s ease;
-  }
-  .app-item:active .app-icon {
-    transform: scale(0.92);
-    box-shadow: 0 2px 6px rgba(0,0,0,0.18);
-  }
-
-  .app-icon svg { width: 24px; height: 24px; }
-
-  .app-label {
-    color: #fff;
-    font-size: 10.5px;
-    font-weight: 600;
-    text-align: center;
-    line-height: 1.25;
-    text-shadow: 0 1px 2px rgba(0,0,0,0.15);
-  }
+  .menu-icon svg { width: 17px; height: 17px; }
 
   .icon-dashboard { background: linear-gradient(135deg, #2563EB, #1D4ED8); }
   .icon-admin     { background: linear-gradient(135deg, #F59E0B, #D97706); }
@@ -145,172 +54,144 @@
   .icon-penerimaan { background: linear-gradient(135deg, #65A30D, #4D7C0F); }
   .icon-penjualan { background: linear-gradient(135deg, #EA580C, #C2410C); }
 
-  footer {
-    text-align: center;
-    margin-top: auto;
-    padding-top: 30px;
-    color: rgba(255,255,255,0.75);
-    font-size: 11px;
+  .sidebar-footer { padding: 16px 20px 0; margin-top: 16px; border-top: 1px solid rgba(255,255,255,0.12); font-size: 11px; color: rgba(255,255,255,0.55); }
+
+  /* ===== TOPBAR MOBILE ===== */
+  .mobile-topbar {
+    display: none; position: sticky; top: 0; z-index: 150; background: var(--green-deep); color: #fff;
+    padding: 14px 16px; align-items: center; gap: 12px;
   }
+  .hamburger { background: none; border: none; color: #fff; font-size: 22px; cursor: pointer; padding: 4px 8px; line-height: 1; }
+  .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 140; }
+  .overlay.show { display: block; }
 
-  @media (max-width: 340px) {
-    .app-grid { column-gap: 4px; }
-    .app-icon { height: 40px; }
-    .app-icon svg { width: 20px; height: 20px; }
+  /* ===== MAIN CONTENT ===== */
+  .main-content { flex: 1; padding: 40px 44px; min-width: 0; }
+
+  .welcome-heading h1 { font-size: 23px; margin: 0 0 4px; color: var(--text-dark); }
+  .welcome-heading p { margin: 0; color: var(--text-muted); font-size: 13.5px; }
+
+  .stat-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 26px 0 34px; }
+  .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px 22px; }
+  .stat-card .num { font-size: 26px; font-weight: 700; color: var(--green-deep); font-family: inherit; }
+  .stat-card .lbl { font-size: 12.5px; color: var(--text-muted); margin-top: 4px; }
+
+  .quick-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; }
+  .quick-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 18px;
+    text-decoration: none; color: var(--text-dark); display: flex; align-items: center; gap: 12px;
+    transition: box-shadow 0.15s ease, transform 0.1s ease;
   }
+  .quick-card:hover { box-shadow: 0 4px 14px rgba(15,61,46,0.1); transform: translateY(-1px); }
+  .quick-card-icon { width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .quick-card-icon svg { width: 19px; height: 19px; }
+  .quick-card-label { font-size: 13.5px; font-weight: 600; }
 
-  /* ===== TAMPILAN PC / LAYAR LEBAR ===== */
-  @media (min-width: 700px) {
-    .phone {
-      max-width: 1100px;
-      padding: 44px 60px 60px;
-    }
-    .statusbar { font-size: 14px; padding: 0 4px 20px; }
-
-    header { margin-bottom: 30px; }
-    .logo-circle { width: 78px; height: 78px; border-radius: 22px; margin-bottom: 14px; }
-    .logo-circle svg { width: 42px; height: 42px; }
-    h1 { font-size: 27px; }
-    .subtitle { font-size: 15px; }
-
-    .widget { padding: 20px 30px; border-radius: 22px; margin-bottom: 36px; }
-    .widget .item .num { font-size: 21px; }
-    .widget .item .lbl { font-size: 12.5px; }
-
-    .app-grid { row-gap: 32px; column-gap: 22px; }
-    .app-icon { height: 76px; border-radius: 18px; }
-    .app-icon svg { width: 34px; height: 34px; }
-    .app-label { font-size: 13.5px; }
-
-    footer { font-size: 12px; padding-top: 40px; }
+  @media (max-width: 860px) {
+    body { flex-direction: column; }
+    .sidebar { position: fixed; top: 0; left: -280px; width: 260px; height: 100vh; z-index: 160; transition: left 0.2s ease; }
+    .sidebar.open { left: 0; }
+    .mobile-topbar { display: flex; }
+    .main-content { padding: 24px 20px; }
+    .stat-row { grid-template-columns: 1fr 1fr; }
   }
 </style>
 </head>
 <body>
-  <div class="phone">
-    <div class="statusbar">
-      <span id="clock">--:--</span>
-      <span id="dateLabel">-</span>
-    </div>
 
-    <header>
-      <div class="logo-circle">
-        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M12 2L3 6v6c0 5 3.8 9.4 9 10 5.2-.6 9-5 9-10V6l-9-4z" fill="#16A34A"/>
-          <path d="M12 7v10M7 12h10" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
-        </svg>
-      </div>
-      <h1>RSUD Aji Muhammad Parikesit</h1>
-      <p class="subtitle">RKO RSAMP &middot; Efisiensi TujuanKU</p>
-    </header>
-
-    <div class="widget">
-      <div class="item">
-        <div class="num">10</div>
-        <div class="lbl">Menu aktif</div>
-      </div>
-      <div class="divider"></div>
-      <div class="item">
-        <div class="num" id="widgetDate">-</div>
-        <div class="lbl">Periode berjalan</div>
-      </div>
-      <div class="divider"></div>
-      <div class="item">
-        <div class="num">●</div>
-        <div class="lbl">Sistem online</div>
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">RS</div>
+      <div>
+        <div class="sidebar-title">RKO RSAMP</div>
+        <div class="sidebar-sub">Efisiensi TujuanKU</div>
       </div>
     </div>
 
-    <nav class="app-grid">
-      <a class="app-item" href="dashboard.html">
-        <div class="app-icon icon-dashboard">
-          <svg viewBox="0 0 24 24" fill="none"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </div>
-        <span class="app-label">Dashboard RKO</span>
+    <nav class="menu-list">
+      <a class="menu-item" href="dashboard.html">
+        <div class="menu-icon icon-dashboard"><svg viewBox="0 0 24 24" fill="none"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        Dashboard RKO
       </a>
-
-      <a class="app-item" href="admin.html">
-        <div class="app-icon icon-admin">
-          <svg viewBox="0 0 24 24" fill="none"><path d="M12 15a3 3 0 100-6 3 3 0 000 6z" stroke="#fff" stroke-width="2"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09A1.65 1.65 0 009.1 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09A1.65 1.65 0 004.6 9.1 1.65 1.65 0 004.27 7.28l-.06-.06A2 2 0 117.04 4.4l.06.06A1.65 1.65 0 008.92 4.8h.08A1.65 1.65 0 0010.5 3.3V3a2 2 0 114 0v.09c0 .69.39 1.32 1 1.62.6.3 1.32.2 1.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06A1.65 1.65 0 0019.4 9c.3.6.9 1 1.6 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z" stroke="#fff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </div>
-        <span class="app-label">Admin</span>
+      <a class="menu-item" href="admin.html">
+        <div class="menu-icon icon-admin"><svg viewBox="0 0 24 24" fill="none"><path d="M12 15a3 3 0 100-6 3 3 0 000 6z" stroke="#fff" stroke-width="2"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09A1.65 1.65 0 009.1 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09A1.65 1.65 0 004.6 9.1 1.65 1.65 0 004.27 7.28l-.06-.06A2 2 0 117.04 4.4l.06.06A1.65 1.65 0 008.92 4.8h.08A1.65 1.65 0 0010.5 3.3V3a2 2 0 114 0v.09c0 .69.39 1.32 1 1.62.6.3 1.32.2 1.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06A1.65 1.65 0 0019.4 9c.3.6.9 1 1.6 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z" stroke="#fff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        Admin
       </a>
-
-      <a class="app-item" href="user.html">
-        <div class="app-icon icon-user">
-          <svg viewBox="0 0 24 24" fill="none"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" stroke="#fff" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="7" r="4" stroke="#fff" stroke-width="2"/></svg>
-        </div>
-        <span class="app-label">User</span>
+      <a class="menu-item" href="user.html">
+        <div class="menu-icon icon-user"><svg viewBox="0 0 24 24" fill="none"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" stroke="#fff" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="7" r="4" stroke="#fff" stroke-width="2"/></svg></div>
+        User
       </a>
-
-      <a class="app-item" href="gudang-farmasi.html">
-        <div class="app-icon icon-gudang">
-          <svg viewBox="0 0 24 24" fill="none"><path d="M21 8l-9-5-9 5 9 5 9-5z" stroke="#fff" stroke-width="2" stroke-linejoin="round"/><path d="M3 8v8l9 5 9-5V8M12 13v8" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </div>
-        <span class="app-label">Gudang Farmasi</span>
+      <a class="menu-item" href="gudang-farmasi.html">
+        <div class="menu-icon icon-gudang"><svg viewBox="0 0 24 24" fill="none"><path d="M21 8l-9-5-9 5 9 5 9-5z" stroke="#fff" stroke-width="2" stroke-linejoin="round"/><path d="M3 8v8l9 5 9-5V8M12 13v8" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        Gudang Farmasi
       </a>
-
-      <a class="app-item" href="distributor.html">
-        <div class="app-icon icon-distributor">
-          <svg viewBox="0 0 24 24" fill="none"><path d="M1 3h15v13H1z" stroke="#fff" stroke-width="2" stroke-linejoin="round"/><path d="M16 8h4l3 3v5h-7V8z" stroke="#fff" stroke-width="2" stroke-linejoin="round"/><circle cx="5.5" cy="18.5" r="2.5" stroke="#fff" stroke-width="2"/><circle cx="18.5" cy="18.5" r="2.5" stroke="#fff" stroke-width="2"/></svg>
-        </div>
-        <span class="app-label">Distributor</span>
+      <a class="menu-item" href="distributor.html">
+        <div class="menu-icon icon-distributor"><svg viewBox="0 0 24 24" fill="none"><path d="M1 3h15v13H1z" stroke="#fff" stroke-width="2" stroke-linejoin="round"/><path d="M16 8h4l3 3v5h-7V8z" stroke="#fff" stroke-width="2" stroke-linejoin="round"/><circle cx="5.5" cy="18.5" r="2.5" stroke="#fff" stroke-width="2"/><circle cx="18.5" cy="18.5" r="2.5" stroke="#fff" stroke-width="2"/></svg></div>
+        Distributor
       </a>
-
-      <a class="app-item" href="laporan.html">
-        <div class="app-icon icon-laporan">
-          <svg viewBox="0 0 24 24" fill="none"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke="#fff" stroke-width="2" stroke-linejoin="round"/><path d="M14 2v6h6M9 13h6M9 17h6M9 9h1" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
-        </div>
-        <span class="app-label">Laporan</span>
+      <a class="menu-item" href="laporan.html">
+        <div class="menu-icon icon-laporan"><svg viewBox="0 0 24 24" fill="none"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke="#fff" stroke-width="2" stroke-linejoin="round"/><path d="M14 2v6h6M9 13h6M9 17h6M9 9h1" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg></div>
+        Laporan
       </a>
-
-      <a class="app-item" href="keuangan.html">
-        <div class="app-icon icon-keuangan">
-          <svg viewBox="0 0 24 24" fill="none"><rect x="2" y="6" width="20" height="12" rx="2" stroke="#fff" stroke-width="2"/><circle cx="12" cy="12" r="3" stroke="#fff" stroke-width="2"/><path d="M6 6v0M18 18v0" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
-        </div>
-        <span class="app-label">Keuangan</span>
+      <a class="menu-item" href="keuangan.html">
+        <div class="menu-icon icon-keuangan"><svg viewBox="0 0 24 24" fill="none"><rect x="2" y="6" width="20" height="12" rx="2" stroke="#fff" stroke-width="2"/><circle cx="12" cy="12" r="3" stroke="#fff" stroke-width="2"/><path d="M6 6v0M18 18v0" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg></div>
+        Keuangan
       </a>
-
-      <a class="app-item" href="pembelian.html">
-        <div class="app-icon icon-pembelian">
-          <svg viewBox="0 0 24 24" fill="none"><circle cx="9" cy="21" r="1.5" fill="#fff"/><circle cx="18" cy="21" r="1.5" fill="#fff"/><path d="M2 3h2l2.4 12.2a2 2 0 002 1.8h8.8a2 2 0 002-1.8L21 7H6" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </div>
-        <span class="app-label">Pembelian</span>
+      <a class="menu-item" href="pembelian.html">
+        <div class="menu-icon icon-pembelian"><svg viewBox="0 0 24 24" fill="none"><circle cx="9" cy="21" r="1.5" fill="#fff"/><circle cx="18" cy="21" r="1.5" fill="#fff"/><path d="M2 3h2l2.4 12.2a2 2 0 002 1.8h8.8a2 2 0 002-1.8L21 7H6" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        Pembelian
       </a>
-
-      <a class="app-item" href="penerimaan.html">
-        <div class="app-icon icon-penerimaan">
-          <svg viewBox="0 0 24 24" fill="none"><path d="M21 8l-9-5-9 5 9 5 9-5z" stroke="#fff" stroke-width="2" stroke-linejoin="round"/><path d="M3 8v8l9 5 9-5V8" stroke="#fff" stroke-width="2" stroke-linejoin="round"/><path d="M12 13l4-6M12 13V5" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/></svg>
-        </div>
-        <span class="app-label">Penerimaan Barang</span>
+      <a class="menu-item" href="penerimaan.html">
+        <div class="menu-icon icon-penerimaan"><svg viewBox="0 0 24 24" fill="none"><path d="M21 8l-9-5-9 5 9 5 9-5z" stroke="#fff" stroke-width="2" stroke-linejoin="round"/><path d="M3 8v8l9 5 9-5V8" stroke="#fff" stroke-width="2" stroke-linejoin="round"/><path d="M12 13l4-6M12 13V5" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/></svg></div>
+        Penerimaan Barang
       </a>
-
-      <a class="app-item" href="penjualan.html">
-        <div class="app-icon icon-penjualan">
-          <svg viewBox="0 0 24 24" fill="none"><path d="M3 3h2l2.4 12.2a2 2 0 002 1.8h8.8a2 2 0 002-1.8L21 7H6" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 21a1 1 0 100-2 1 1 0 000 2zM18 21a1 1 0 100-2 1 1 0 000 2z" fill="#fff"/><path d="M8 11l2 2 4-4" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </div>
-        <span class="app-label">Penjualan</span>
+      <a class="menu-item" href="penjualan.html">
+        <div class="menu-icon icon-penjualan"><svg viewBox="0 0 24 24" fill="none"><path d="M3 3h2l2.4 12.2a2 2 0 002 1.8h8.8a2 2 0 002-1.8L21 7H6" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 21a1 1 0 100-2 1 1 0 000 2zM18 21a1 1 0 100-2 1 1 0 000 2z" fill="#fff"/><path d="M8 11l2 2 4-4" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        Penjualan
       </a>
     </nav>
 
-    <footer>RKO Obat &amp; BMHP &middot; RSUD Aji Muhammad Parikesit</footer>
+    <div class="sidebar-footer">RKO Obat &amp; BMHP &middot; RS AM Parikesit</div>
+  </aside>
+
+  <div class="overlay" id="overlay" onclick="toggleSidebar(false)"></div>
+
+  <div style="flex:1; min-width:0; display:flex; flex-direction:column;">
+    <div class="mobile-topbar">
+      <button class="hamburger" onclick="toggleSidebar(true)">&#9776;</button>
+      <strong>RKO RSAMP</strong>
+    </div>
+
+    <main class="main-content">
+      <div class="welcome-heading">
+        <h1>Selamat datang di RKO RSAMP</h1>
+        <p>Pilih menu di sisi kiri untuk mulai, atau klik salah satu pintasan di bawah.</p>
+      </div>
+
+      <div class="stat-row">
+        <div class="stat-card"><div class="num">10</div><div class="lbl">Menu aktif</div></div>
+        <div class="stat-card"><div class="num" id="periodeBerjalan">-</div><div class="lbl">Periode berjalan</div></div>
+        <div class="stat-card"><div class="num" style="color:var(--green-mid);">&#9679; Online</div><div class="lbl">Status sistem</div></div>
+      </div>
+
+      <div class="quick-grid">
+        <a class="quick-card" href="dashboard.html"><div class="quick-card-icon icon-dashboard"><svg viewBox="0 0 24 24" fill="none"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="quick-card-label">Dashboard RKO</span></a>
+        <a class="quick-card" href="user.html"><div class="quick-card-icon icon-user"><svg viewBox="0 0 24 24" fill="none"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" stroke="#fff" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="7" r="4" stroke="#fff" stroke-width="2"/></svg></div><span class="quick-card-label">Input Kebutuhan (User)</span></a>
+        <a class="quick-card" href="gudang-farmasi.html"><div class="quick-card-icon icon-gudang"><svg viewBox="0 0 24 24" fill="none"><path d="M21 8l-9-5-9 5 9 5 9-5z" stroke="#fff" stroke-width="2" stroke-linejoin="round"/><path d="M3 8v8l9 5 9-5V8M12 13v8" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="quick-card-label">Gudang Farmasi</span></a>
+        <a class="quick-card" href="laporan.html"><div class="quick-card-icon icon-laporan"><svg viewBox="0 0 24 24" fill="none"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke="#fff" stroke-width="2" stroke-linejoin="round"/><path d="M14 2v6h6M9 13h6M9 17h6M9 9h1" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg></div><span class="quick-card-label">Laporan</span></a>
+      </div>
+    </main>
   </div>
 
 <script>
-  function updateClock() {
-    const now = new Date();
-    const hh = String(now.getHours()).padStart(2, '0');
-    const mm = String(now.getMinutes()).padStart(2, '0');
-    document.getElementById('clock').textContent = hh + ':' + mm;
-
-    const hariList = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
-    document.getElementById('dateLabel').textContent = hariList[now.getDay()] + ', ' + now.getDate() + '/' + (now.getMonth()+1);
-
-    const bulanList = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
-    document.getElementById('widgetDate').textContent = bulanList[now.getMonth()] + ' ' + now.getFullYear();
+  function toggleSidebar(open) {
+    document.getElementById('sidebar').classList.toggle('open', open);
+    document.getElementById('overlay').classList.toggle('show', open);
   }
-  updateClock();
-  setInterval(updateClock, 30000);
+
+  const namaBulan = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+  const now = new Date();
+  document.getElementById('periodeBerjalan').textContent = namaBulan[now.getMonth()] + ' ' + now.getFullYear();
 </script>
 </body>
 </html>
